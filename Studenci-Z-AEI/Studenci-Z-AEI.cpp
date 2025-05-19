@@ -4,9 +4,16 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Studenci z AEI");
+	sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Studenci z AEI"); //Pozmieniaæ proporcja, gracz mo¿e zmieniaæ rozmiar okna.
 
-    Board board(40.f, { 400.f, 300.f });
+    
+    sf::Vector2f windowCenter(1920.f / 2.f, 1080.f / 2.f);
+
+   
+    float hexSize = 80.f; 
+
+    Board board(hexSize, windowCenter);
+
 
     while (window.isOpen())
     {

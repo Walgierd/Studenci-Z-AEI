@@ -17,5 +17,6 @@ private:
     sf::ConvexShape hexShape;
     ResourceType resourceType;
     sf::Vector2f position;
+    float hexSize;
     void setupHexShape(float size);
 };

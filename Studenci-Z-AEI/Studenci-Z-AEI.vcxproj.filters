@@ -41,5 +41,8 @@
     <ClInclude Include="Board.h">
       <Filter>Header Files\Source Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files\Source Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

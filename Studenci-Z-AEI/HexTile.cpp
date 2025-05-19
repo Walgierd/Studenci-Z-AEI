@@ -1,12 +1,13 @@
 #include "HexTile.h"
+#include <cmath>
 
 HexTile::HexTile(float x, float y, float size, ResourceType resource)
-    : resourceType(resource), position(x, y)
+    : resourceType(resource), position(x, y), hexSize(size)
 {
     setupHexShape(size);
     hexShape.setPosition(position);
     switch (resourceType) {
-    case ResourceType::Kawa:    hexShape.setFillColor(sf::Color(139, 69, 19)); break; 
+    case ResourceType::Kawa:    hexShape.setFillColor(sf::Color(139, 69, 19)); break;
     case ResourceType::Energia: hexShape.setFillColor(sf::Color::Yellow); break;
     case ResourceType::Notatki: hexShape.setFillColor(sf::Color::White); break;
     default:                    hexShape.setFillColor(sf::Color(100, 100, 100)); break;
@@ -23,7 +24,18 @@ void HexTile::setupHexShape(float size) {
 
 void HexTile::draw(sf::RenderWindow& window) const {
     window.draw(hexShape);
+
+    if (resourceType != ResourceType::None) {
+        float circleRadius = hexSize / 2.4f;
+        sf::CircleShape circle(circleRadius);
+        circle.setFillColor(sf::Color::Black);
+        circle.setOrigin(sf::Vector2f(circleRadius, circleRadius));
+        circle.setPosition(position);
+
+        window.draw(circle);
+    }
 }
+
 
 ResourceType HexTile::getResourceType() const {
     return resourceType;
