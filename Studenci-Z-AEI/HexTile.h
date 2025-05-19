@@ -19,3 +19,5 @@ private:
     sf::Vector2f position;
     void setupHexShape(float size);
 };
+
+//testowy komentarz 
