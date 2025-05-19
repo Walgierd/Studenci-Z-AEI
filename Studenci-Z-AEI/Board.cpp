@@ -7,7 +7,6 @@ Board::Board(float hexSize, sf::Vector2f center) {
 }
 
 void Board::generateTiles(float hexSize, sf::Vector2f center) {
-    // Uk³ad 3-4-5-4-3
     const int rows[] = { 3, 4, 5, 4, 3 };
     const int numRows = 5;
     const float hexHeight = hexSize * 2;
@@ -30,7 +29,6 @@ void Board::generateTiles(float hexSize, sf::Vector2f center) {
 }
 
 std::vector<ResourceType> Board::shuffledResources() {
-    // Przyk³adowy rozk³ad: 6 kawa, 6 energia, 6 notatki, 1 pusty
     std::vector<ResourceType> resources = {
         ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
         ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
