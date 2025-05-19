@@ -1,8 +1,9 @@
 #include "HexTile.h"
 #include <cmath>
+#include <string>
 
-HexTile::HexTile(float x, float y, float size, ResourceType resource)
-    : resourceType(resource), position(x, y), hexSize(size)
+HexTile::HexTile(float x, float y, float size, ResourceType resource, int number)
+    : resourceType(resource), position(x, y), hexSize(size), number(number)
 {
     setupHexShape(size);
     hexShape.setPosition(position);
@@ -22,6 +23,8 @@ void HexTile::setupHexShape(float size) {
     }
 }
 
+
+
 void HexTile::draw(sf::RenderWindow& window) const {
     window.draw(hexShape);
 
@@ -29,10 +32,21 @@ void HexTile::draw(sf::RenderWindow& window) const {
         float circleRadius = hexSize / 2.4f;
         sf::CircleShape circle(circleRadius);
         circle.setFillColor(sf::Color::Black);
-        circle.setOrigin(sf::Vector2f(circleRadius, circleRadius));
+        circle.setOrigin (sf::Vector2f(circleRadius, circleRadius));
         circle.setPosition(position);
 
         window.draw(circle);
+
+        static sf::Font font("Fonts/arial.ttf");
+        std::string numberStr = std::to_string(number);
+        sf::Text text(font,numberStr, static_cast<unsigned int>(circleRadius * 0.8f));
+        text.setFillColor(sf::Color::White);
+        text.setStyle(sf::Text::Bold);
+
+        sf::FloatRect bounds = text.getLocalBounds();
+        text.setPosition(hexShape.getPosition());
+
+        window.draw(text);
     }
 }
 

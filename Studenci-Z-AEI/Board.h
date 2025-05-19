@@ -13,4 +13,5 @@ private:
     std::vector<HexTile> tiles;
     void generateTiles(float hexSize, sf::Vector2f center);
     std::vector<ResourceType> shuffledResources();
+    std::vector<int> shuffledNumbers();
 };
