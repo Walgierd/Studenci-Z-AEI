@@ -23,7 +23,13 @@ void Board::generateTiles(float hexSize, sf::Vector2f center) {
         float startX = center.x - hexWidth * (numInRow - 1) / 2.f;
         for (int col = 0; col < numInRow; ++col) {
             float x = startX + col * hexWidth;
-            tiles.emplace_back(x, y, hexSize, resources[resourceIdx++]);
+
+            if (row == 2 && col == 2) {
+                tiles.emplace_back(x, y, hexSize, ResourceType::None);
+            }
+            else {
+                tiles.emplace_back(x, y, hexSize, resources[resourceIdx++]);
+            }
         }
     }
 }
@@ -35,8 +41,8 @@ std::vector<ResourceType> Board::shuffledResources() {
         ResourceType::Energia, ResourceType::Energia, ResourceType::Energia,
         ResourceType::Energia, ResourceType::Energia, ResourceType::Energia,
         ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki,
-        ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki,
-        ResourceType::None
+        ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki
+
     };
     std::random_device rd;
     std::mt19937 g(rd());
