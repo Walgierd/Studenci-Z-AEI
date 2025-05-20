@@ -30,6 +30,9 @@
     <ClCompile Include="Board.cpp">
       <Filter>Source Files\Source Mains</Filter>
     </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Source Files\Source Mains</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Studenci-Z-AEI.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files\Source Headers</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
+      <Filter>Header Files\Source Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
       <Filter>Header Files\Source Headers</Filter>
     </ClInclude>
   </ItemGroup>
