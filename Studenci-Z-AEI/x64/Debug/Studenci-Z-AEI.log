@@ -1,0 +1,9 @@
+﻿  HexTile.cpp
+E:\SFML-3.0.0\include\SFML\System\Exception.hpp(41,47): warning C4275: non dll-interface class 'std::runtime_error' used as base for dll-interface class 'sf::Exception'
+  (compiling source file 'HexTile.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\stdexcept(100,19):
+      see declaration of 'std::runtime_error'
+      E:\SFML-3.0.0\include\SFML\System\Exception.hpp(41,23):
+      see declaration of 'sf::Exception'
+  
+  Studenci-Z-AEI.vcxproj -> C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe

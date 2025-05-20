@@ -32,19 +32,27 @@ void HexTile::draw(sf::RenderWindow& window) const {
         float circleRadius = hexSize / 2.4f;
         sf::CircleShape circle(circleRadius);
         circle.setFillColor(sf::Color::Black);
-        circle.setOrigin (sf::Vector2f(circleRadius, circleRadius));
+        circle.setOrigin(circleRadius, circleRadius);
         circle.setPosition(position);
 
         window.draw(circle);
 
-        static sf::Font font("Fonts/arial.ttf");
+        static sf::Font font;
+        static bool fontLoaded = false;
+        if (!fontLoaded) {
+            fontLoaded = font.loadFromFile("Fonts/arial.ttf");
+        }
         std::string numberStr = std::to_string(number);
-        sf::Text text(font,numberStr, static_cast<unsigned int>(circleRadius * 0.8f));
+        sf::Text text;
+        text.setFont(font);
+        text.setString(numberStr);
+        text.setCharacterSize(static_cast<unsigned int>(circleRadius * 0.8f));
         text.setFillColor(sf::Color::White);
         text.setStyle(sf::Text::Bold);
 
         sf::FloatRect bounds = text.getLocalBounds();
-        text.setPosition(hexShape.getPosition());
+        text.setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
+        text.setPosition(position);
 
         window.draw(text);
     }

@@ -1,25 +1,21 @@
 #include <SFML/Graphics.hpp>
-#include <optional>
 #include "Board.h"
 
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Studenci z AEI"); //Pozmieniaæ proporcja, gracz mo¿e zmieniaæ rozmiar okna.
+    sf::RenderWindow window(sf::VideoMode(1920, 1080), "Studenci z AEI");
 
-    
     sf::Vector2f windowCenter(1920.f / 2.f, 1080.f / 2.f);
-
-   
-    float hexSize = 80.f; 
+    float hexSize = 80.f;
 
     Board board(hexSize, windowCenter);
 
-
     while (window.isOpen())
     {
-        while (const std::optional event = window.pollEvent())
+        sf::Event event;
+        while (window.pollEvent(event))
         {
-            if (event->is<sf::Event::Closed>())
+            if (event.type == sf::Event::Closed)
                 window.close();
         }
 
