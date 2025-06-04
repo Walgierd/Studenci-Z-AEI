@@ -1,8 +1,10 @@
 #include "Studenci-Z-AEI.h"
+#include "Menu.h"
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1920, 1080), "Studenci z AEI");
+    sf::RenderWindow window(sf::VideoMode(1920, 1080), "Studenci z AEI", sf::Style::Default);
+    unsigned int currentStyle = sf::Style::Default; 
 
     Menu menu(1920, 1080);
     bool inMenu = true;
@@ -24,7 +26,23 @@ int main()
                 if (menu.isStartClicked(mousePos)) {
                     inMenu = false;
                 }
+                if (menu.isFullscreenClicked(mousePos)) {
+                    menu.fullscreenToggleRequested = true;
+                }
             }
+        }
+
+        if (menu.isFullscreenToggleRequested()) {
+            bool fullscreen = (currentStyle != sf::Style::Fullscreen);
+            window.close();
+            if (fullscreen) {
+                window.create(sf::VideoMode::getDesktopMode(), "Studenci z AEI", sf::Style::Fullscreen);
+                currentStyle = sf::Style::Fullscreen; 
+            } else {
+                window.create(sf::VideoMode(1920, 1080), "Studenci z AEI", sf::Style::Default);
+                currentStyle = sf::Style::Default;
+            }
+            menu.resetFullscreenToggleRequest();
         }
 
         window.clear();

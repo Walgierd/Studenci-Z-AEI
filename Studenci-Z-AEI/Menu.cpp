@@ -1,69 +1,72 @@
 #include "Menu.h"
 
 Menu::Menu(float width, float height) {
-    bgTexture.loadFromFile("Assets/Menu.png");
+    bgTexture.loadFromFile("Assets/Menu2.png");
     background.setTexture(bgTexture);
 
     font.loadFromFile("Fonts/pixel.ttf");
 
-    
-    title.setFont(font);
-    title.setString("STUDENCI\n Z AEI");
-    title.setCharacterSize(120);
-    title.setFillColor(sf::Color(255, 237, 149)); // #ffed95
-    title.setOutlineColor(sf::Color(198, 57, 224)); // #c639e0
-    title.setOutlineThickness(6);
-    sf::FloatRect titleBounds = title.getLocalBounds();
-    title.setOrigin(titleBounds.left, titleBounds.top + titleBounds.height / 2);
-    title.setPosition(60, height / 2 - 100);
+    startButtonTexture.loadFromFile("Assets/Start.png");
+    startButtonHoverTexture.loadFromFile("Assets/Start-on.png");
+    startButtonSprite.setTexture(startButtonTexture);
 
-    
-    startButton.setFont(font);
-    startButton.setString("GRAJ");
-    startButton.setCharacterSize(60);
-    startButton.setFillColor(sf::Color(107, 61, 160)); // #6b3da0
-    startButton.setOutlineColor(sf::Color(198, 57, 224)); // #c639e0
-    startButton.setOutlineThickness(4);
-    sf::FloatRect btnBounds = startButton.getLocalBounds();
-    startButton.setOrigin(btnBounds.left, btnBounds.top + btnBounds.height / 2);
-    startButton.setPosition(60, height / 2 + 120);
+    startButtonSprite.setScale(0.3f, 0.3f);
 
-   
+    sf::Vector2u bgSize = bgTexture.getSize();
+    sf::Vector2u btnSize = startButtonTexture.getSize();
+    float btnHeight = btnSize.y * 0.3f;
+    float posY = (bgSize.y - btnHeight) / 2.0f + 40.0f; 
 
+    startButtonSprite.setPosition(60, posY);
 
-    startButtonBox.setSize({ btnBounds.width + 60, btnBounds.height + 40 });
-    startButtonBox.setOrigin(startButtonBox.getSize().x / 2, startButtonBox.getSize().y / 2);
-    startButtonBox.setPosition(60 + startButtonBox.getSize().x / 2, height / 2 + 120);
+    fullscreenButtonTexture.loadFromFile("Assets/Fullscreen.png");
+    fullscreenButtonSprite.setTexture(fullscreenButtonTexture);
 
-    startButton.setOrigin(btnBounds.left + btnBounds.width / 2, btnBounds.top + btnBounds.height / 2);
-    startButton.setPosition(startButtonBox.getPosition());
+    float scale = 64.0f / fullscreenButtonTexture.getSize().x;
+    fullscreenButtonSprite.setScale(scale, scale);
 
-    startButtonBox.setFillColor(sf::Color(85, 97, 211)); // #5561d3
-    startButtonBox.setOutlineColor(sf::Color(142, 104, 230)); // #8e68e6
-    startButtonBox.setOutlineThickness(4);
+    float spriteWidth = fullscreenButtonTexture.getSize().x * scale;
+    float spriteHeight = fullscreenButtonTexture.getSize().y * scale;
+    fullscreenButtonSprite.setPosition(width - spriteWidth - 400, height - spriteHeight - 400);
 }
 
 void Menu::update(const sf::Vector2f& mousePos) {
-    if (startButtonBox.getGlobalBounds().contains(mousePos)) {
+    if (startButtonSprite.getGlobalBounds().contains(mousePos)) {
         startButtonHovered = true;
-        startButtonBox.setFillColor(sf::Color(85, 97, 211, 255)); // #5561d3
-        startButton.setFillColor(sf::Color(255, 237, 149)); // #ffed95
-        startButtonBox.setOutlineColor(sf::Color(198, 57, 224)); // #c639e0
-    } else {
+        startButtonSprite.setTexture(startButtonHoverTexture);
+    }
+    else {
         startButtonHovered = false;
-        startButtonBox.setFillColor(sf::Color(85, 97, 211)); // #5561d3
-        startButton.setFillColor(sf::Color(255, 237, 149)); // #ffed95
-        startButtonBox.setOutlineColor(sf::Color(142, 104, 230)); // #8e68e6
+        startButtonSprite.setTexture(startButtonTexture);
+    }
+
+    if (fullscreenButtonSprite.getGlobalBounds().contains(mousePos)) {
+        fullscreenButtonHovered = true;
+        fullscreenButtonSprite.setColor(sf::Color(200, 200, 255));
+    } else {
+        fullscreenButtonHovered = false;
+        fullscreenButtonSprite.setColor(sf::Color::White);
     }
 }
 
 void Menu::draw(sf::RenderWindow& window) {
     window.draw(background);
-    window.draw(title);
-    window.draw(startButtonBox);
-    window.draw(startButton);
+    window.draw(startButtonSprite);
+    window.draw(fullscreenButtonSprite);
 }
 
 bool Menu::isStartClicked(const sf::Vector2f& mousePos) const {
-    return startButtonBox.getGlobalBounds().contains(mousePos);
+    return startButtonSprite.getGlobalBounds().contains(mousePos);
+}
+
+bool Menu::isFullscreenClicked(const sf::Vector2f& mousePos) const {
+    return fullscreenButtonSprite.getGlobalBounds().contains(mousePos);
+}
+
+bool Menu::isFullscreenToggleRequested() const {
+    return fullscreenToggleRequested;
+}
+
+void Menu::resetFullscreenToggleRequest() {
+    fullscreenToggleRequested = false;
 }
