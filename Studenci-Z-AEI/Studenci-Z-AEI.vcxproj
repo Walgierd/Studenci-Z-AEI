@@ -140,12 +140,16 @@
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="HexTile.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="PlayerUI.cpp" />
     <ClCompile Include="Studenci-Z-AEI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Board.h" />
+    <ClInclude Include="Buildable.h" />
     <ClInclude Include="HexTile.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="PlayerUI.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Studenci-Z-AEI.h" />
   </ItemGroup>

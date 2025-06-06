@@ -1,26 +1,18 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <string>
 
 enum class ResourceType {
+    None,
     Kawa,
     Energia,
-    Notatki,
-    None
+    Notatki
 };
 
-class HexTile {
+class Tile {
 public:
-    HexTile(float x, float y, float size, ResourceType resource);
-    void draw(sf::RenderWindow& window) const;
-    ResourceType getResourceType() const;
-    sf::Vector2f getPosition() const;
-
-private:
-    void setupHexShape(float size);
-
-    ResourceType resourceType;
-    sf::Vector2f position;
-    sf::ConvexShape hexShape;
-    sf::CircleShape circleShape;
-    float hexSize;
+    virtual ~Tile() = default;
+    virtual void draw(sf::RenderWindow& window) const = 0;
+    virtual ResourceType getResourceType() const = 0;
+    virtual sf::Vector2f getPosition() const = 0;
 };

@@ -1,5 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <vector>
+#include <string>
 
 class Menu {
 public:
@@ -8,10 +10,12 @@ public:
     bool isStartClicked(const sf::Vector2f& mousePos) const;
     void update(const sf::Vector2f& mousePos);
     bool isFullscreenClicked(const sf::Vector2f& mousePos) const;
-    bool fullscreenToggleRequested = false;
+    bool isFullscreenToggleRequested() const;
+    void resetFullscreenToggleRequest();
+    int getSelectedPlayerCount() const;
+    void setFullscreenToggleRequested(bool value); // Add this method declaration
 
 private:
-
     sf::Sprite background;
     sf::Texture bgTexture;
     sf::Font font;
@@ -23,7 +27,8 @@ private:
     sf::Sprite fullscreenButtonSprite;
     bool startButtonHovered = false;
     bool fullscreenButtonHovered = false;
-public:
-    bool isFullscreenToggleRequested() const;
-    void resetFullscreenToggleRequest();
+    bool fullscreenToggleRequested = false;
+    std::vector<sf::RectangleShape> playerCountButtons;
+    std::vector<sf::Text> playerCountTexts;
+    int selectedPlayerCount = 2;
 };
