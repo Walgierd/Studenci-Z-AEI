@@ -33,6 +33,15 @@
     <ClCompile Include="Menu.cpp">
       <Filter>Source Files\Source Mains</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Trade.cpp">
+      <Filter>Source Files\Source Mains</Filter>
+    </ClCompile>
+    <ClCompile Include="Cards.cpp">
+      <Filter>Source Files\Source Mains</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Studenci-Z-AEI.h">
@@ -49,6 +58,24 @@
     </ClInclude>
     <ClInclude Include="Menu.h">
       <Filter>Header Files\Source Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Buildable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Knight.h">
+      <Filter>Header Files\Source Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Trade.h">
+      <Filter>Header Files\Source Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Cards.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

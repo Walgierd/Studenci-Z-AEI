@@ -138,20 +138,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Board.cpp" />
+    <ClCompile Include="Cards.cpp" />
     <ClCompile Include="HexTile.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PlayerUI.cpp" />
     <ClCompile Include="Studenci-Z-AEI.cpp" />
+    <ClCompile Include="Trade.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Board.h" />
     <ClInclude Include="Buildable.h" />
+    <ClInclude Include="Cards.h" />
     <ClInclude Include="HexTile.h" />
+    <ClInclude Include="Knight.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerUI.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Studenci-Z-AEI.h" />
+    <ClInclude Include="Trade.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

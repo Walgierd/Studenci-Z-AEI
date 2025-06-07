@@ -2,8 +2,11 @@
 #include "Menu.h"
 #include "Player.h"
 #include "PlayerUI.h"
-#include "HexTile.h" 
+#include "HexTile.h"
 #include "Buildable.h"
+#include "Knight.h"
+#include "Trade.h"
+#include "Cards.h" // Add this include to resolve the undeclared identifier error
 #include <memory>
 #include <vector>
 #include <filesystem>
@@ -12,11 +15,12 @@
 #include <thread>
 #include <mutex>
 #include <array>
+#include <map>
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1920, 1080), "Studenci z AEI", sf::Style::Default);
-    unsigned int currentStyle = sf::Style::Default; 
+    unsigned int currentStyle = sf::Style::Default;
 
     Menu menu(1920, 1080);
     bool inMenu = true;
@@ -31,15 +35,17 @@ int main()
 
     sf::Font font;
     if (!std::filesystem::exists("Fonts/arial.ttf") || !font.loadFromFile("Fonts/arial.ttf")) {
-       return 1;
+        return 1;
     }
 
     std::vector<std::unique_ptr<Buildable>> buildables;
     std::mutex buildMutex;
 
     BuildMode buildMode = BuildMode::None;
-
     std::vector<std::unique_ptr<BuildSpotButton>> buildButtons;
+
+    // --- Mechanika wymiany: TradeUI ---
+    TradeUI trade;
 
     std::vector<std::unique_ptr<UIButton>> playerButtons;
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj drogê", sf::Vector2f(30, 350), [&](){
@@ -56,12 +62,14 @@ int main()
         buildMode = BuildMode::City;
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Wymiana", sf::Vector2f(30, 530), [&](){
-        // TODO: logika wymiany
+        if (players.size() > 1) {
+            trade.startTrade(font, players, currentPlayer);
+        }
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Nastêpna tura", sf::Vector2f(30, 590), [&](){
         if (!players.empty()) {
             currentPlayer = (currentPlayer + 1) % players.size();
-            if (currentPlayer == 0 && !players[currentPlayer].hasRolled()) { 
+            if (currentPlayer == 0 && !players[currentPlayer].hasRolled()) {
                 // Additional logic can be added here if needed
             }
             if (currentPlayer == 0) ++turnCounter;
@@ -98,16 +106,33 @@ int main()
     sf::Vector2f buildStart, buildEnd;
     bool buildFirstClick = true;
 
+    Knight knight;
+    knight.setPosition(static_cast<int>(board.getTiles().size() / 2));
+    bool knightMoveMode = false;
+    std::vector<std::unique_ptr<BuildSpotButton>> knightMoveButtons;
+
     // Przygotowanie przycisku rzutu koœæmi z poprawionym wygl¹dem
     sf::RectangleShape diceButton(sf::Vector2f(120, 50));
     diceButton.setPosition(static_cast<float>(window.getSize().x) - 180.f, 300.f);
-    diceButton.setFillColor(sf::Color(60, 160, 60)); // Zielony
+    diceButton.setFillColor(sf::Color(60, 160, 60));
     diceButton.setOutlineColor(sf::Color::White);
     diceButton.setOutlineThickness(4.f);
     sf::Text diceButtonText("Rzut", font, 24);
     diceButtonText.setFillColor(sf::Color::White);
     diceButtonText.setStyle(sf::Text::Bold);
     diceButtonText.setPosition(diceButton.getPosition().x + 8.f, diceButton.getPosition().y + 10.f);
+
+    CardManager cardManager;
+    bool showCardsMode = false;
+
+    cardManager.buyCardButton = std::make_unique<SimpleButton>(font, "Kup kartê", sf::Vector2f(30, 650), [&](){
+        if (!players.empty()) cardManager.buyCard(players[currentPlayer]);
+    });
+    cardManager.showCardsButton = std::make_unique<SimpleButton>(font, "Zobacz karty", sf::Vector2f(30, 710), [&cardManager]() {
+        cardManager.cardsVisible = !cardManager.cardsVisible;
+    });
+
+    bool freeBuildRoad = false;
 
     while (window.isOpen())
     {
@@ -136,10 +161,34 @@ int main()
             if (!inMenu && event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f mousePos = window.mapPixelToCoords({ event.mouseButton.x, event.mouseButton.y });
 
+                // --- Mechanika wymiany ---
+                if (trade.exchangeMode) {
+                    trade.handleClick(mousePos, players, currentPlayer);
+                    continue;
+                }
+
+                if (knightMoveMode) {
+                    for (auto& btn : knightMoveButtons) {
+                        if (btn->isClicked(mousePos)) {
+                            btn->onClick();
+                            break;
+                        }
+                    }
+                    continue;
+                }
+
                 for (auto& btn : playerButtons) {
                     if (btn->isClicked(mousePos)) {
                         btn->onClick();
                     }
+                }
+
+                if (cardManager.buyCardButton->isClicked(mousePos)) {
+                    cardManager.buyCardButton->onClick();
+                }
+
+                if (cardManager.showCardsButton->isClicked(mousePos)) {
+                    cardManager.showCardsButton->onClick();
                 }
 
                 if (diceButton.getGlobalBounds().contains(mousePos)) {
@@ -147,7 +196,7 @@ int main()
                         players[currentPlayer].rollDice();
                         int diceSum = players[currentPlayer].getDice1() + players[currentPlayer].getDice2();
                         for (const auto& tile : board.getTiles()) {
-                            if (tile.getNumber() == diceSum) {
+                            if (tile.getNumber() == diceSum && !knight.blocksTile(static_cast<int>(&tile - &board.getTiles()[0]))) {
                                 for (const auto& b : buildables) {
                                     if (auto* s = dynamic_cast<Settlement*>(b.get())) {
                                         if (std::hypot(s->pos.x - tile.getPosition().x, s->pos.y - tile.getPosition().y) < hexSize + 2) {
@@ -155,6 +204,22 @@ int main()
                                         }
                                     }
                                 }
+                            }
+                        }
+                        if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {
+                            knightMoveMode = true;
+                            knightMoveButtons.clear();
+                            const auto& tiles = board.getTiles();
+                            for (size_t i = 0; i < tiles.size(); ++i) {
+                                if (static_cast<int>(i) == knight.tileIndex) continue;
+                                knightMoveButtons.push_back(std::make_unique<KnightMoveButton>(
+                                    tiles[i].getPosition(), static_cast<int>(i),
+                                    [&](int idx) {
+                                        knight.setPosition(idx);
+                                        knightMoveMode = false;
+                                        knightMoveButtons.clear();
+                                    }
+                                ));
                             }
                         }
                     }
@@ -167,7 +232,6 @@ int main()
                     auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
                     for (const auto& pos : settlementSpots) {
                         if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
-                            // Minimalna odleg³oœæ: dwie krawêdzie heksa (czyli hexSize * sqrt(3))
                             if (isSettlementFarEnough(buildables, pos, hexSize * std::sqrt(3.f) - 5)) {
                                 if (players[currentPlayer].getResourceCount(ResourceType::Kawa) >= 1 &&
                                     players[currentPlayer].getResourceCount(ResourceType::Energia) >= 1 &&
@@ -194,16 +258,19 @@ int main()
                         sf::Vector2f mid = (edge.first + edge.second) / 2.f;
                         if (std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
                             if (isRoadConnected(buildables, edge.first, edge.second, players[currentPlayer].getId())) {
-                                if (players[currentPlayer].getResourceCount(ResourceType::Kawa) >= 1 &&
-                                    players[currentPlayer].getResourceCount(ResourceType::Energia) >= 1) {
-                                    players[currentPlayer].removeResource(ResourceType::Kawa, 1);
-                                    players[currentPlayer].removeResource(ResourceType::Energia, 1);
+                                if ((players[currentPlayer].getResourceCount(ResourceType::Kawa) >= 1 &&
+                                     players[currentPlayer].getResourceCount(ResourceType::Energia) >= 1) || freeBuildRoad) {
+                                    if (!freeBuildRoad) {
+                                        players[currentPlayer].removeResource(ResourceType::Kawa, 1);
+                                        players[currentPlayer].removeResource(ResourceType::Energia, 1);
+                                    }
                                     auto road = std::make_unique<Road>();
                                     road->ownerId = players[currentPlayer].getId();
                                     road->start = edge.first;
                                     road->end = edge.second;
                                     buildables.push_back(std::move(road));
                                     buildMode = BuildMode::None;
+                                    freeBuildRoad = false;
                                 }
                             }
                             break;
@@ -237,7 +304,7 @@ int main()
             window.close();
             if (fullscreen) {
                 window.create(sf::VideoMode::getDesktopMode(), "Studenci z AEI", sf::Style::Fullscreen);
-                currentStyle = sf::Style::Fullscreen; 
+                currentStyle = sf::Style::Fullscreen;
             } else {
                 window.create(sf::VideoMode(1920, 1080), "Studenci z AEI", sf::Style::Default);
                 currentStyle = sf::Style::Default;
@@ -249,7 +316,7 @@ int main()
         if (inMenu) {
             sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
             sf::Vector2f mousePos = window.mapPixelToCoords(mousePixel);
-            menu.update(mousePos); 
+            menu.update(mousePos);
             menu.draw(window);
         }
         else {
@@ -317,15 +384,49 @@ int main()
 
             window.draw(diceButton);
             window.draw(diceButtonText);
+
+            cardManager.buyCardButton->draw(window);
+            cardManager.showCardsButton->draw(window);
+            if (cardManager.cardsVisible) {
+                cardManager.showCards(window, font, players[currentPlayer]);
+                // Obs³uga klikniêcia na kartê
+                if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2f mousePos = window.mapPixelToCoords({ event.mouseButton.x, event.mouseButton.y });
+                    const auto& cards = cardManager.getPlayerCards().at(players[currentPlayer].getId());
+                    float y = 200.f;
+                    for (size_t i = 0; i < cards.size(); ++i) {
+                        sf::FloatRect cardRect(400.f, y, 400.f, 40.f); // szerokoœæ i wysokoœæ jak w showCards
+                        if (cardRect.contains(mousePos)) {
+                            cardManager.useCard(
+                                i, players[currentPlayer], buildables, board, knight, players,
+                                buildMode, buildButtons, window, hexSize, currentPlayer,
+                                freeBuildRoad, knightMoveMode, knightMoveButtons
+                            );
+                            break;
+                        }
+                        y += 40.f;
+                    }
+                }
+            }
+
+            knight.draw(window, board.getTiles(), hexSize);
+
+            if (knightMoveMode) {
+                for (const auto& btn : knightMoveButtons)
+                    btn->draw(window);
+            }
+
+            // --- Rysowanie UI wymiany ---
+            trade.draw(window);
         }
 
         window.display();
 
         if (!players.empty() && buildMode == BuildMode::None) {
-            static int lastTurn = -1;
-            if (turnCounter != lastTurn) {
+            static int lastPlayer = -1;
+            if (currentPlayer != lastPlayer) {
                 players[currentPlayer].resetDice();
-                lastTurn = turnCounter;
+                lastPlayer = currentPlayer;
             }
         }
     }
