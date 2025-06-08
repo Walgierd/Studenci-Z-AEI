@@ -7,6 +7,7 @@
 #include "Knight.h"
 #include "Trade.h"
 #include "Cards.h" // Add this include to resolve the undeclared identifier error
+#include "Menago.h"
 #include <memory>
 #include <vector>
 #include <filesystem>
@@ -67,14 +68,7 @@ int main()
         }
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Nastêpna tura", sf::Vector2f(30, 590), [&](){
-        if (!players.empty()) {
-            currentPlayer = (currentPlayer + 1) % players.size();
-            if (currentPlayer == 0 && !players[currentPlayer].hasRolled()) {
-                // Additional logic can be added here if needed
-            }
-            if (currentPlayer == 0) ++turnCounter;
-        }
-        buildMode = BuildMode::None;
+        nextPlayerTurn(players, currentPlayer, turnCounter, buildMode);
     }));
 
     auto giveTestResources = [](Player& p) {
@@ -133,6 +127,7 @@ int main()
     });
 
     bool freeBuildRoad = false;
+    bool freeBuildSettlement = false; // Dodaj tê liniê
 
     while (window.isOpen())
     {
@@ -168,12 +163,7 @@ int main()
                 }
 
                 if (knightMoveMode) {
-                    for (auto& btn : knightMoveButtons) {
-                        if (btn->isClicked(mousePos)) {
-                            btn->onClick();
-                            break;
-                        }
-                    }
+                    knight.handleMoveClick(mousePos, knightMoveButtons, knightMoveMode);
                     continue;
                 }
 
@@ -192,20 +182,7 @@ int main()
                 }
 
                 if (diceButton.getGlobalBounds().contains(mousePos)) {
-                    if (!players.empty() && !players[currentPlayer].hasRolled()) {
-                        players[currentPlayer].rollDice();
-                        int diceSum = players[currentPlayer].getDice1() + players[currentPlayer].getDice2();
-                        for (const auto& tile : board.getTiles()) {
-                            if (tile.getNumber() == diceSum && !knight.blocksTile(static_cast<int>(&tile - &board.getTiles()[0]))) {
-                                for (const auto& b : buildables) {
-                                    if (auto* s = dynamic_cast<Settlement*>(b.get())) {
-                                        if (std::hypot(s->pos.x - tile.getPosition().x, s->pos.y - tile.getPosition().y) < hexSize + 2) {
-                                            players[s->ownerId].addResource(tile.getResourceType(), s->isCity ? 2 : 1);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    if (handleDiceRoll(players, currentPlayer, board, buildables, knight, hexSize)) {
                         if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {
                             knightMoveMode = true;
                             knightMoveButtons.clear();
@@ -232,19 +209,8 @@ int main()
                     auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
                     for (const auto& pos : settlementSpots) {
                         if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
-                            if (isSettlementFarEnough(buildables, pos, hexSize * std::sqrt(3.f) - 5)) {
-                                if (players[currentPlayer].getResourceCount(ResourceType::Kawa) >= 1 &&
-                                    players[currentPlayer].getResourceCount(ResourceType::Energia) >= 1 &&
-                                    players[currentPlayer].getResourceCount(ResourceType::Notatki) >= 1) {
-                                    players[currentPlayer].removeResource(ResourceType::Kawa, 1);
-                                    players[currentPlayer].removeResource(ResourceType::Energia, 1);
-                                    players[currentPlayer].removeResource(ResourceType::Notatki, 1);
-                                    auto settlement = std::make_unique<Settlement>();
-                                    settlement->ownerId = players[currentPlayer].getId();
-                                    settlement->pos = pos;
-                                    buildables.push_back(std::move(settlement));
-                                    buildMode = BuildMode::None;
-                                }
+                            if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlement)) {
+                                buildMode = BuildMode::None;
                             }
                             break;
                         }
@@ -257,44 +223,16 @@ int main()
                     for (const auto& edge : roadSpots) {
                         sf::Vector2f mid = (edge.first + edge.second) / 2.f;
                         if (std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
-                            if (isRoadConnected(buildables, edge.first, edge.second, players[currentPlayer].getId())) {
-                                if ((players[currentPlayer].getResourceCount(ResourceType::Kawa) >= 1 &&
-                                     players[currentPlayer].getResourceCount(ResourceType::Energia) >= 1) || freeBuildRoad) {
-                                    if (!freeBuildRoad) {
-                                        players[currentPlayer].removeResource(ResourceType::Kawa, 1);
-                                        players[currentPlayer].removeResource(ResourceType::Energia, 1);
-                                    }
-                                    auto road = std::make_unique<Road>();
-                                    road->ownerId = players[currentPlayer].getId();
-                                    road->start = edge.first;
-                                    road->end = edge.second;
-                                    buildables.push_back(std::move(road));
-                                    buildMode = BuildMode::None;
-                                    freeBuildRoad = false;
-                                }
+                            if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoad)) {
+                                buildMode = BuildMode::None;
                             }
                             break;
                         }
                     }
                 } else if (buildMode == BuildMode::City) {
-                    for (auto& b : buildables | std::views::filter([](const std::unique_ptr<Buildable>& b) {
-                        return dynamic_cast<Settlement*>(b.get()) != nullptr;
-                    })) {
-                        auto* s = dynamic_cast<Settlement*>(b.get());
-                        if (!s->isCity && s->ownerId == players[currentPlayer].getId() &&
-                            std::hypot(s->pos.x - mousePos.x, s->pos.y - mousePos.y) < 40.f) {
-                            if (players[currentPlayer].getResourceCount(ResourceType::Kawa) >= 2 &&
-                                players[currentPlayer].getResourceCount(ResourceType::Energia) >= 2 &&
-                                players[currentPlayer].getResourceCount(ResourceType::Notatki) >= 2) {
-                                players[currentPlayer].removeResource(ResourceType::Kawa, 2);
-                                players[currentPlayer].removeResource(ResourceType::Energia, 2);
-                                players[currentPlayer].removeResource(ResourceType::Notatki, 2);
-                                s->isCity = true;
-                            }
-                            break;
-                        }
+                    if (tryBuildCity(buildables, players, currentPlayer, mousePos)) {
+                        buildMode = BuildMode::None;
                     }
-                    buildMode = BuildMode::None;
                 }
             }
         }
@@ -400,7 +338,7 @@ int main()
                             cardManager.useCard(
                                 i, players[currentPlayer], buildables, board, knight, players,
                                 buildMode, buildButtons, window, hexSize, currentPlayer,
-                                freeBuildRoad, knightMoveMode, knightMoveButtons
+                                freeBuildRoad, freeBuildSettlement, knightMoveMode, knightMoveButtons
                             );
                             break;
                         }

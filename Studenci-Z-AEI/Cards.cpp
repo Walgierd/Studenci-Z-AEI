@@ -65,6 +65,7 @@ void CardManager::useCard(
     float hexSize,
     int currentPlayer,
     bool& freeBuildRoad,
+    bool& freeBuildSettlement, // <-- ADD THIS
     bool& knightMoveMode,
     std::vector<std::unique_ptr<BuildSpotButton>>& knightMoveButtons
 ) {
@@ -75,8 +76,8 @@ void CardManager::useCard(
     if (type == CardType::FreeSettlement) {
         buildMode = BuildMode::Settlement;
         buildButtons.clear();
+        freeBuildSettlement = true; // <-- This now sets the correct flag!
         initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, players, currentPlayer, window);
-        // Nie pobieraj surowców w logice budowy (mo¿esz dodaæ flagê freeBuildSettlement jeœli chcesz)
     }
     else if (type == CardType::FreeRoad) {
         buildMode = BuildMode::Road;

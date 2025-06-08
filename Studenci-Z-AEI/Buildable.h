@@ -5,6 +5,7 @@
 #include <functional>
 #include <vector>
 #include <set>
+#include "Player.h"
 #include "Board.h"
 
 // Forward declaration of Board
@@ -252,3 +253,29 @@ inline void initializeBuildButtons(
         }
     }
 }
+
+// --- Funkcje do próby budowy ---
+bool tryBuildSettlement(
+    std::vector<std::unique_ptr<Buildable>>& buildables,
+    std::vector<Player>& players,
+    int currentPlayer,
+    const sf::Vector2f& pos,
+    float minDist,
+    bool& freeBuildSettlement
+);
+
+bool tryBuildRoad(
+    std::vector<std::unique_ptr<Buildable>>& buildables,
+    std::vector<Player>& players,
+    int currentPlayer,
+    const sf::Vector2f& start,
+    const sf::Vector2f& end,
+    bool& freeBuildRoad
+);
+
+bool tryBuildCity(
+    std::vector<std::unique_ptr<Buildable>>& buildables,
+    std::vector<Player>& players,
+    int currentPlayer,
+    const sf::Vector2f& pos
+);

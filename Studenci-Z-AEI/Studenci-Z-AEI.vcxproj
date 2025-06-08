@@ -138,8 +138,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Board.cpp" />
+    <ClCompile Include="Buildable.cpp" />
     <ClCompile Include="Cards.cpp" />
     <ClCompile Include="HexTile.cpp" />
+    <ClCompile Include="Knight.cpp" />
+    <ClCompile Include="Menago.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PlayerUI.cpp" />
     <ClCompile Include="Studenci-Z-AEI.cpp" />
@@ -151,6 +154,7 @@
     <ClInclude Include="Cards.h" />
     <ClInclude Include="HexTile.h" />
     <ClInclude Include="Knight.h" />
+    <ClInclude Include="Menago.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerUI.h" />

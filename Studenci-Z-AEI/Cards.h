@@ -65,6 +65,7 @@ public:
         float hexSize,
         int currentPlayer,
         bool& freeBuildRoad,
+        bool& freeBuildSettlement, // <-- ADD THIS
         bool& knightMoveMode,
         std::vector<std::unique_ptr<BuildSpotButton>>& knightMoveButtons
     );
