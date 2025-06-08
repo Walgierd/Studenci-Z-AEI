@@ -1,13 +1,5 @@
+
 #include "Trade.h"
-#include "Menu.h"
-#include <vector>
-#include <memory>
-#include <map>
-#include <string>
-#include <functional>
-#include "Player.h"
-#include "Resource.h"
-#include "PlayerUI.h"
 
 void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer) {
     exchangeMode = true;
@@ -26,39 +18,36 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
             exchangeTargetPlayer = (int)i;
             exchangeButtons.clear();
             float by = 300.f;
-            for (ResourceType t : {ResourceType::Kawa, ResourceType::Energia, ResourceType::Notatki}) {
+            for (ResourceType t : {ResourceType::Kawa, ResourceType::Piwo, ResourceType::Notatki, ResourceType::Pizza, ResourceType::Kabel}) {
                 exchangeGive[t] = 0;
                 exchangeGet[t] = 0;
 
                 auto giveBtn = std::make_unique<SimpleButton>(
                     font,
-                    std::string("Daj 0 ") + (t == ResourceType::Kawa ? "Kawa" : t == ResourceType::Energia ? "Energia" : "Notatki"),
+                    std::string("Daj 0 ") + resourceName(t),
                     sf::Vector2f(600, by),
                     [this, t, btnPtr = (SimpleButton*)nullptr]() mutable {
                         exchangeGive[t] = (exchangeGive[t] + 1) % 6;
-                        btnPtr->setLabelText("Daj " + std::to_string(exchangeGive[t]) + " " +
-                            (t == ResourceType::Kawa ? "Kawa" : t == ResourceType::Energia ? "Energia" : "Notatki"));
+                        btnPtr->setLabelText("Daj " + std::to_string(exchangeGive[t]) + " " + resourceName(t));
                     }
                 );
                 auto* giveBtnRaw = giveBtn.get();
                 giveBtn->setCallback([this, t, giveBtnRaw]() mutable {
                     exchangeGive[t] = (exchangeGive[t] + 1) % 6;
-                    giveBtnRaw->setLabelText("Daj " + std::to_string(exchangeGive[t]) + " " +
-                        (t == ResourceType::Kawa ? "Kawa" : t == ResourceType::Energia ? "Energia" : "Notatki"));
+                    giveBtnRaw->setLabelText("Daj " + std::to_string(exchangeGive[t]) + " " + resourceName(t));
                 });
                 exchangeButtons.push_back(std::move(giveBtn));
 
                 auto wezBtn = std::make_unique<SimpleButton>(
                     font,
-                    std::string("Wez 0 ") + (t == ResourceType::Kawa ? "Kawa" : t == ResourceType::Energia ? "Energia" : "Notatki"),
+                    std::string("Wez 0 ") + resourceName(t),
                     sf::Vector2f(900, by),
-                    [this, t, by, &font]() {} // tymczasowy pusty callback
+                    [this, t, by, &font]() {}
                 );
                 auto* wezBtnRaw = wezBtn.get();
                 wezBtn->setCallback([this, t, by, wezBtnRaw]() mutable {
                     exchangeGet[t] = (exchangeGet[t] + 1) % 6;
-                    wezBtnRaw->setLabelText("Wez " + std::to_string(exchangeGet[t]) + " " +
-                        (t == ResourceType::Kawa ? "Kawa" : t == ResourceType::Energia ? "Energia" : "Notatki"));
+                    wezBtnRaw->setLabelText("Wez " + std::to_string(exchangeGet[t]) + " " + resourceName(t));
                 });
                 exchangeButtons.push_back(std::move(wezBtn));
 
@@ -122,3 +111,4 @@ void TradeUI::reset() {
     exchangePlayerButtons.clear();
     exchangeAcceptButton.reset();
 }
+

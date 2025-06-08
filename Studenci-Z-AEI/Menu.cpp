@@ -1,6 +1,4 @@
 #include "Menu.h"
-#include <SFML/Graphics.hpp>
-#include <string>
 
 Menu::Menu(unsigned int width, unsigned int height) {
     this->width = width;
@@ -88,12 +86,16 @@ void Menu::update(const sf::Vector2f& mousePos) {
     }
 }
 
-void Menu::draw(sf::RenderWindow& window) {
+void Menu::draw(sf::RenderWindow& window) const {
     window.draw(background);
     window.draw(startButtonSprite);
     window.draw(fullscreenButtonSprite);
-    for (const auto& btn : playerCountButtons) window.draw(btn);
-    for (const auto& txt : playerCountTexts) window.draw(txt);
+    for (const auto& btn : playerCountButtons) {
+        window.draw(btn);
+    }
+    for (const auto& txt : playerCountTexts) {
+        window.draw(txt);
+    }
 }
 
 bool Menu::isStartClicked(const sf::Vector2f& mousePos) const {

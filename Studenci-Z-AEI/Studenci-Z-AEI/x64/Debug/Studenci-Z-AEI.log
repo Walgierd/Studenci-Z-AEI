@@ -1,7 +1,15 @@
-﻿  Menu.cpp
+﻿  Game.cpp
+  PlayerUI.cpp
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244: 'initializing': conversion from 'T' to 'float', possible loss of data
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244:         with
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244:         [
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244:             T=unsigned int
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244:         ]
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244: 'initializing': conversion from 'T' to 'float', possible loss of data
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244:         with
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244:         [
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244:             T=unsigned int
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244:         ]
   Studenci-Z-AEI.cpp
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\Studenci-Z-AEI.cpp(9,36): warning C4101: 'ex': unreferenced local variable
-  UIButton.cpp
   Generating Code...
-  LINK : C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe not found or not built by the last incremental link; performing full link
   Studenci-Z-AEI.vcxproj -> C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe

@@ -1,24 +1,15 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <vector>
 #include "Player.h"
+#include "Resource.h"
 
 class PlayerUI {
 public:
     PlayerUI(const sf::Font& font) : font(font) {}
 
-    void draw(const Player& player, sf::RenderWindow& window, float x, float y) {
-        int offsetY = 0;
-        for (const auto& [type, count] : player.getResources()) {
-            sf::Text text;
-            text.setFont(font);
-            text.setCharacterSize(22);
-            text.setFillColor(sf::Color::White);
-            text.setPosition(x, y + offsetY);
-            text.setString(resourceName(type) + ": " + std::to_string(count));
-            window.draw(text);
-            offsetY += 30;
-        }
-    }
+    void draw(const Player& player, sf::RenderWindow& window, float x, float y) const;
+    void drawAll(const std::vector<Player>& players, sf::RenderWindow& window) const;
 
 private:
     const sf::Font& font;
@@ -26,8 +17,10 @@ private:
     std::string resourceName(ResourceType type) const {
         switch (type) {
             case ResourceType::Kawa: return "Kawa";
-            case ResourceType::Energia: return "Energia";
+            case ResourceType::Piwo: return "Piwo";
             case ResourceType::Notatki: return "Notatki";
+            case ResourceType::Pizza: return "Pizza";
+            case ResourceType::Kabel: return "Kabel";
             default: return "Brak";
         }
     }

@@ -5,24 +5,23 @@
 #include <functional>
 #include <vector>
 #include <set>
+
 #include "Player.h"
 #include "Board.h"
 
-// Forward declaration of Board
 class Board;
 
-// --- Definicja BuildMode ---
 enum class BuildMode { None, Road, Settlement, City };
 
-// Klasa bazowa dla wszystkich budowli
+
+
 struct Buildable {
+    int ownerId = -1;
     virtual ~Buildable() = default;
     virtual void draw(sf::RenderWindow& window) const = 0;
     virtual sf::Vector2f getPosition() const = 0;
-    int ownerId;
 };
 
-// Klasa reprezentuj¹ca drogê
 struct Road : public Buildable {
     sf::Vector2f start, end;
     void draw(sf::RenderWindow& window) const override {
@@ -34,7 +33,6 @@ struct Road : public Buildable {
         shape.setFillColor(sf::Color(200, 50 + 40 * ownerId, 50));
         window.draw(shape);
 
-        // Numer gracza
         static sf::Font font;
         static bool loaded = font.loadFromFile("Fonts/arial.ttf");
         if (loaded) {
@@ -47,7 +45,6 @@ struct Road : public Buildable {
     sf::Vector2f getPosition() const override { return (start + end) / 2.f; }
 };
 
-// Klasa reprezentuj¹ca osiedle/miasto
 struct Settlement : public Buildable {
     sf::Vector2f pos;
     bool isCity = false;
@@ -88,7 +85,6 @@ struct Settlement : public Buildable {
     sf::Vector2f getPosition() const override { return pos; }
 };
 
-// --- Przycisk budowy na mapie (bazowy) ---
 struct BuildSpotButton {
     sf::Vector2f pos;
     float radius = 10.f;
@@ -111,7 +107,6 @@ struct BuildSpotButton {
     virtual void onClick() = 0;
 };
 
-// Przycisk do budowy osiedla na wierzcho³ku
 struct SettlementSpotButton : public BuildSpotButton {
     std::function<void(const sf::Vector2f&)> buildCallback;
     SettlementSpotButton(const sf::Vector2f& p, std::function<void(const sf::Vector2f&)> cb) {
@@ -124,7 +119,6 @@ struct SettlementSpotButton : public BuildSpotButton {
     }
 };
 
-// Przycisk do budowy drogi na krawêdzi
 struct RoadSpotButton : public BuildSpotButton {
     sf::Vector2f endPos;
     std::function<void(const sf::Vector2f&, const sf::Vector2f&)> buildCallback;
@@ -139,7 +133,6 @@ struct RoadSpotButton : public BuildSpotButton {
     }
 };
 
-// --- Funkcje pomocnicze do generowania UNIKALNYCH przycisków na wierzcho³kach i krawêdziach hexów ---
 inline std::vector<sf::Vector2f> getUniqueHexVertices(const std::vector<sf::Vector2f>& centers, float size, float epsilon = 1.0f) {
     std::vector<sf::Vector2f> allVertices;
     for (const auto& center : centers) {
@@ -187,7 +180,6 @@ inline std::vector<std::pair<sf::Vector2f, sf::Vector2f>> getUniqueHexEdges(cons
     return allEdges;
 }
 
-// --- Pomocnicze funkcje do logiki budowania ---
 inline bool isSettlementFarEnough(const std::vector<std::unique_ptr<Buildable>>& buildables, const sf::Vector2f& pos, float minDist) {
     for (const auto& b : buildables) {
         if (auto* s = dynamic_cast<Settlement*>(b.get())) {
@@ -218,7 +210,6 @@ inline bool isRoadConnected(const std::vector<std::unique_ptr<Buildable>>& build
     return false;
 }
 
-// --- Funkcja inicjalizuj¹ca przyciski budowy ---
 inline void initializeBuildButtons(
     std::vector<std::unique_ptr<BuildSpotButton>>& buildButtons,
     std::vector<std::unique_ptr<Buildable>>& buildables,
@@ -240,7 +231,6 @@ inline void initializeBuildButtons(
     if (buildMode == BuildMode::Settlement) {
         for (const auto& pos : settlementSpots) {
             buildButtons.push_back(std::make_unique<SettlementSpotButton>(pos, [&](const sf::Vector2f& p) {
-                // logika budowy osiedla (opcjonalnie)
                 }));
         }
     }
@@ -248,20 +238,19 @@ inline void initializeBuildButtons(
     if (buildMode == BuildMode::Road) {
         for (const auto& edge : roadSpots) {
             buildButtons.push_back(std::make_unique<RoadSpotButton>(edge.first, edge.second, [&](const sf::Vector2f& a, const sf::Vector2f& b) {
-                // logika budowy drogi (opcjonalnie)
                 }));
         }
     }
 }
 
-// --- Funkcje do próby budowy ---
 bool tryBuildSettlement(
     std::vector<std::unique_ptr<Buildable>>& buildables,
     std::vector<Player>& players,
     int currentPlayer,
     const sf::Vector2f& pos,
     float minDist,
-    bool& freeBuildSettlement
+    bool& freeBuildSettlement,
+    bool setupPhase // nowy parametr
 );
 
 bool tryBuildRoad(
@@ -270,7 +259,9 @@ bool tryBuildRoad(
     int currentPlayer,
     const sf::Vector2f& start,
     const sf::Vector2f& end,
-    bool& freeBuildRoad
+    bool& freeBuildRoad,
+    bool setupPhase, // nowy parametr
+    const sf::Vector2f& lastSettlementPos // nowy parametr
 );
 
 bool tryBuildCity(

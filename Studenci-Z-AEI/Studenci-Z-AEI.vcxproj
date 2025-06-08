@@ -146,15 +146,18 @@
     <ClCompile Include="Menago.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PlayerUI.cpp" />
+    <ClCompile Include="Resource.cpp" />
     <ClCompile Include="SimpleButton.cpp" />
     <ClCompile Include="Studenci-Z-AEI.cpp" />
     <ClCompile Include="Trade.cpp" />
+    <ClCompile Include="TurnManager.cpp" />
     <ClCompile Include="UIButton.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Board.h" />
     <ClInclude Include="Buildable.h" />
     <ClInclude Include="Cards.h" />
+    <ClInclude Include="Drawable.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="HexTile.h" />
     <ClInclude Include="Knight.h" />
@@ -167,6 +170,7 @@
     <ClInclude Include="SimpleButton.h" />
     <ClInclude Include="Studenci-Z-AEI.h" />
     <ClInclude Include="Trade.h" />
+    <ClInclude Include="TurnManager.h" />
     <ClInclude Include="UIButton.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

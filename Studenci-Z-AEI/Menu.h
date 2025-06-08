@@ -1,13 +1,15 @@
 #pragma once
+
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
 #include <functional>
+#include "Drawable.h"
 
-class Menu {
+class Menu : public Drawable {
 public:
     Menu(unsigned int width, unsigned int height);
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderWindow& window) const override;
     bool isStartClicked(const sf::Vector2f& mousePos) const;
     void update(const sf::Vector2f& mousePos);
     bool isFullscreenClicked(const sf::Vector2f& mousePos) const;

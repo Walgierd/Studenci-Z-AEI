@@ -8,6 +8,8 @@
 #include "Knight.h"
 #include "Trade.h"
 #include "Cards.h"
+#include "Resource.h"
+#include "TurnManager.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <mutex>
@@ -29,6 +31,7 @@ private:
     bool inMenu;
     float hexSize;
     Board board;
+    TurnManager turnManager;
     std::vector<Player> players;
     int currentPlayer;
     int turnCounter;
@@ -44,11 +47,16 @@ private:
     bool freeBuildRoad;
     bool freeBuildSettlement;
 
+    bool setupPhase; 
+    std::vector<sf::Vector2f> lastSettlementPos; 
+
+    int setupTurn; 
+    int setupStep; 
+    int setupPlayerIndex; 
     void handleEvents();
     void handleMenuEvents(const sf::Event& event);
     void handleGameEvents(const sf::Event& event);
     void update();
     void render();
     void setupPlayerButtons();
-    void giveTestResources(Player& p);
 };

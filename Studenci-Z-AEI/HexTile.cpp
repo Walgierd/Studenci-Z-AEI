@@ -9,8 +9,10 @@ HexTile::HexTile(float x, float y, float size, ResourceType resource, int number
     hexShape.setPosition(position);
     switch (resourceType) {
     case ResourceType::Kawa:    hexShape.setFillColor(sf::Color(139, 69, 19)); break;
-    case ResourceType::Energia: hexShape.setFillColor(sf::Color::Yellow); break;
+    case ResourceType::Piwo:    hexShape.setFillColor(sf::Color(255, 215, 0)); break; // z³oty kolor piwa
     case ResourceType::Notatki: hexShape.setFillColor(sf::Color::White); break;
+    case ResourceType::Pizza:   hexShape.setFillColor(sf::Color(255, 99, 71)); break;
+    case ResourceType::Kabel:   hexShape.setFillColor(sf::Color(128, 128, 128)); break;
     default:                    hexShape.setFillColor(sf::Color(100, 100, 100)); break;
     }
 }
@@ -22,8 +24,6 @@ void HexTile::setupHexShape(float size) {
         hexShape.setPoint(i, { size * std::cos(angle), size * std::sin(angle) });
     }
 }
-
-
 
 void HexTile::draw(sf::RenderWindow& window) const {
     window.draw(hexShape);
@@ -57,7 +57,6 @@ void HexTile::draw(sf::RenderWindow& window) const {
         window.draw(text);
     }
 }
-
 
 ResourceType HexTile::getResourceType() const {
     return resourceType;

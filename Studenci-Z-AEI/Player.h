@@ -17,7 +17,6 @@ public:
     }
     const std::map<ResourceType, int>& getResources() const { return resources; }
 
-    // Mechanika rzutu koœæmi
     void rollDice() {
         if (hasRolledThisTurn) return;
         std::random_device rd;

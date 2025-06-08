@@ -8,14 +8,14 @@ bool freeBuildSettlement = false;
 bool freeKnightMove = false;
 
 void CardManager::buyCard(Player& player) {
-    // Koszt: 1 kawa, 1 energia, 1 notatki
+    // Koszt: 1 kawa, 1 piwo, 1 notatki
     if (player.getResourceCount(ResourceType::Kawa) < 1 ||
-        player.getResourceCount(ResourceType::Energia) < 1 ||
+        player.getResourceCount(ResourceType::Piwo) < 1 ||
         player.getResourceCount(ResourceType::Notatki) < 1)
         return;
 
     player.removeResource(ResourceType::Kawa, 1);
-    player.removeResource(ResourceType::Energia, 1);
+    player.removeResource(ResourceType::Piwo, 1);
     player.removeResource(ResourceType::Notatki, 1);
 
     // Losuj kartê

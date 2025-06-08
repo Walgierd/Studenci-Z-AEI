@@ -38,12 +38,11 @@ void Board::generateTiles(float hexSize, sf::Vector2f center) {
 
 std::vector<ResourceType> Board::shuffledResources() {
     std::vector<ResourceType> resources = {
-        ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
-        ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
-        ResourceType::Energia, ResourceType::Energia, ResourceType::Energia,
-        ResourceType::Energia, ResourceType::Energia, ResourceType::Energia,
-        ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki,
-        ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki
+        ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
+        ResourceType::Piwo, ResourceType::Piwo, ResourceType::Piwo, ResourceType::Piwo,
+        ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki,
+        ResourceType::Pizza, ResourceType::Pizza, ResourceType::Pizza, ResourceType::Pizza,
+        ResourceType::Kabel, ResourceType::Kabel
     };
     std::random_device rd;
     std::mt19937 g(rd());

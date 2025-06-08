@@ -2,12 +2,17 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 
+
 enum class ResourceType {
     None,
     Kawa,
-    Energia,
-    Notatki
+    Piwo,
+    Notatki,
+    Pizza,
+    Kabel,
+    COUNT
 };
+
 
 class Tile {
 public:
@@ -16,3 +21,6 @@ public:
     virtual ResourceType getResourceType() const = 0;
     virtual sf::Vector2f getPosition() const = 0;
 };
+
+std::string resourceName(ResourceType type);
+
