@@ -7,7 +7,7 @@
 #include "Buildable.h"
 #include "Knight.h"
 #include "Board.h"
-#include "Menu.h" // Include the header where SimpleButton is defined
+#include "Menu.h" 
 
 enum class CardType {
     FreeRoad,
