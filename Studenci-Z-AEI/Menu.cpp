@@ -2,7 +2,10 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 
-Menu::Menu(float width, float height) {
+Menu::Menu(unsigned int width, unsigned int height) {
+    this->width = width;
+    this->height = height;
+
     bgTexture.loadFromFile("Assets/Menu2.png");
     background.setTexture(bgTexture);
 
@@ -17,7 +20,7 @@ Menu::Menu(float width, float height) {
     sf::Vector2u bgSize = bgTexture.getSize();
     sf::Vector2u btnSize = startButtonTexture.getSize();
     float btnHeight = btnSize.y * 0.3f;
-    float posY = (bgSize.y - btnHeight) / 2.0f + 40.0f; 
+    float posY = (bgSize.y - btnHeight) / 2.0f + 40.0f;
 
     startButtonSprite.setPosition(60, posY);
 
@@ -31,19 +34,17 @@ Menu::Menu(float width, float height) {
     float spriteHeight = fullscreenButtonTexture.getSize().y * scale;
     fullscreenButtonSprite.setPosition(width - spriteWidth - 400, height - spriteHeight - 400);
 
-    // Przyciski wyboru liczby graczy (2-4)
     float btnWidth = 120;
     float startX = width / 2.f - 1.5f * btnWidth;
     float y = height / 2.f + 100;
     for (int i = 2; i <= 4; ++i) {
-        sf::RectangleShape btn({btnWidth, btnHeight});
+        sf::RectangleShape btn({ btnWidth, btnHeight });
         btn.setPosition(startX + (i - 2) * (btnWidth + 20), y);
         btn.setFillColor(i == selectedPlayerCount ? sf::Color::Green : sf::Color(100, 100, 100));
         playerCountButtons.push_back(btn);
 
         sf::Text txt;
-        // Za³aduj font, ustaw tekst, rozmiar, kolor, pozycjê...
-        // (przyk³ad, za³aduj font tylko raz!)
+
         static sf::Font font;
         static bool fontLoaded = false;
         if (!fontLoaded) {
@@ -72,12 +73,12 @@ void Menu::update(const sf::Vector2f& mousePos) {
     if (fullscreenButtonSprite.getGlobalBounds().contains(mousePos)) {
         fullscreenButtonHovered = true;
         fullscreenButtonSprite.setColor(sf::Color(200, 200, 255));
-    } else {
+    }
+    else {
         fullscreenButtonHovered = false;
         fullscreenButtonSprite.setColor(sf::Color::White);
     }
 
-    // SprawdŸ klikniêcie na przycisk liczby graczy
     for (size_t i = 0; i < playerCountButtons.size(); ++i) {
         if (playerCountButtons[i].getGlobalBounds().contains(mousePos)) {
             for (auto& btn : playerCountButtons) btn.setFillColor(sf::Color(100, 100, 100));
@@ -117,4 +118,14 @@ void Menu::setFullscreenToggleRequested(bool value) {
 
 int Menu::getSelectedPlayerCount() const {
     return selectedPlayerCount;
+}
+
+void Menu::handleFullscreenToggle(sf::RenderWindow& window, unsigned int& currentStyle) {
+    if (currentStyle == sf::Style::Default) {
+        currentStyle = sf::Style::Fullscreen;
+        window.create(sf::VideoMode(width, height), "Studenci z AEI", currentStyle);
+    } else {
+        currentStyle = sf::Style::Default;
+        window.create(sf::VideoMode(width, height), "Studenci z AEI", currentStyle);
+    }
 }

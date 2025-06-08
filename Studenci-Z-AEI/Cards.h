@@ -7,7 +7,8 @@
 #include "Buildable.h"
 #include "Knight.h"
 #include "Board.h"
-#include "Menu.h" 
+#include "SimpleButton.h"
+#include "UIButton.h"
 
 enum class CardType {
     FreeRoad,
@@ -65,7 +66,7 @@ public:
         float hexSize,
         int currentPlayer,
         bool& freeBuildRoad,
-        bool& freeBuildSettlement, // <-- ADD THIS
+        bool& freeBuildSettlement, 
         bool& knightMoveMode,
         std::vector<std::unique_ptr<BuildSpotButton>>& knightMoveButtons
     );

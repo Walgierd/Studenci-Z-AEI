@@ -1,4 +1,7 @@
-﻿  Studenci-Z-AEI.cpp
-  Studenci-Z-AEI.vcxproj -> C:\Users\Piotr\Source\Repos\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe
-  'pwsh.exe' is not recognized as an internal or external command,
-  operable program or batch file.
+﻿  Menu.cpp
+  Studenci-Z-AEI.cpp
+C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\Studenci-Z-AEI.cpp(9,36): warning C4101: 'ex': unreferenced local variable
+  UIButton.cpp
+  Generating Code...
+  LINK : C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe not found or not built by the last incremental link; performing full link
+  Studenci-Z-AEI.vcxproj -> C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe

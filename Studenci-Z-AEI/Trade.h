@@ -4,9 +4,10 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "Menu.h" // <-- tu s¹ UIButton i SimpleButton!
 #include "Player.h"
 #include "Resource.h"
+#include "SimpleButton.h"
+#include "UIButton.h"
 
 struct TradeUI {
     bool exchangeMode = false;
