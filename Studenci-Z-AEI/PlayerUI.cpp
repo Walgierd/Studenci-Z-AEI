@@ -1,4 +1,4 @@
-#include "PlayerUI.h"
+ï»¿#include "PlayerUI.h"
 #include <sstream>
 
 void PlayerUI::draw(const Player& player, sf::RenderWindow& window, float x, float y) const {
@@ -30,10 +30,10 @@ void PlayerUI::drawAll(const std::vector<Player>& players, sf::RenderWindow& win
     float windowWidth = window.getSize().x;
     float windowHeight = window.getSize().y;
     float playerWidth = windowWidth / players.size();
-    float y = windowHeight - 180.f; // Odleg³oœæ od do³u
+    float y = windowHeight - 180.f; // OdlegÅ‚oÅ›Ä‡ od doÅ‚u
 
     for (size_t i = 0; i < players.size(); ++i) {
-        float x = i * playerWidth + 20.f; // Odstêp od lewej krawêdzi
+        float x = i * playerWidth + 20.f; // OdstÄ™p od lewej krawÄ™dzi
         draw(players[i], window, x, y);
     }
 }

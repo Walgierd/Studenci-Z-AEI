@@ -1,7 +1,6 @@
+﻿#include "Trade.h"
 
-#include "Trade.h"
-
-void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer) {
+void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer, Logs* logs) {
     exchangeMode = true;
     exchangeTargetPlayer = -1;
     exchangeGive.clear();
@@ -14,7 +13,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
     for (size_t i = 0; i < players.size(); ++i) {
         if ((int)i == currentPlayer) continue;
         std::string label = "Gracz " + std::to_string(players[i].getId() + 1);
-        exchangePlayerButtons.push_back(std::make_unique<SimpleButton>(font, label, sf::Vector2f(300, y), [this, &font, &players, currentPlayer, i]() mutable {
+        exchangePlayerButtons.push_back(std::make_unique<SimpleButton>(font, label, sf::Vector2f(300, y), [this, &font, &players, currentPlayer, i, logs]() mutable {
             exchangeTargetPlayer = (int)i;
             exchangeButtons.clear();
             float by = 300.f;
@@ -53,24 +52,35 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
 
                 by += 60.f;
             }
-            exchangeAcceptButton = std::make_unique<SimpleButton>(font, "Akceptuj", sf::Vector2f(800, by + 20.f), [this, &players, currentPlayer]() {
-                bool canGive = true, canGet = true;
-                for (auto& [t, v] : exchangeGive)
-                    if (players[currentPlayer].getResourceCount(t) < v) canGive = false;
-                for (auto& [t, v] : exchangeGet)
-                    if (players[exchangeTargetPlayer].getResourceCount(t) < v) canGet = false;
-                if (canGive && canGet) {
+            exchangeAcceptButton = std::make_unique<SimpleButton>(
+                font, 
+                "Akceptuj", 
+                sf::Vector2f(800, by + 20.f), 
+                [this, &players, currentPlayer, logs]() {
+                    bool canGive = true, canGet = true;
                     for (auto& [t, v] : exchangeGive) {
-                        players[currentPlayer].removeResource(t, v);
-                        players[exchangeTargetPlayer].addResource(t, v);
+                        if (players[currentPlayer].getResourceCount(t) < v) canGive = false;
                     }
                     for (auto& [t, v] : exchangeGet) {
-                        players[exchangeTargetPlayer].removeResource(t, v);
-                        players[currentPlayer].addResource(t, v);
+                        if (players[exchangeTargetPlayer].getResourceCount(t) < v) canGet = false;
                     }
+                    if (canGive && canGet) {
+                        for (auto& [t, v] : exchangeGive) {
+                            players[currentPlayer].removeResource(t, v);
+                            players[exchangeTargetPlayer].addResource(t, v);
+                        }
+                        for (auto& [t, v] : exchangeGet) {
+                            players[exchangeTargetPlayer].removeResource(t, v);
+                            players[currentPlayer].addResource(t, v);
+                        }
+                        if (logs) {
+                            logs->add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) +
+                                      " wymienia z Graczem " + std::to_string(players[exchangeTargetPlayer].getId() + 1));
+                        }
+                    }
+                    reset();
                 }
-                reset();
-            });
+            );
         }));
         y += 60.f;
     }

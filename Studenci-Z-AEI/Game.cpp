@@ -1,4 +1,4 @@
-#include "Game.h"
+﻿#include "Game.h"
 #include "Menago.h"
 #include <filesystem>
 #include <cmath>
@@ -19,7 +19,8 @@ Game::Game()
       setupPhase(true),
       setupTurn(0),
       setupStep(0),
-      setupPlayerIndex(0)
+      setupPlayerIndex(0),
+      logs(font)
 {
     if (!std::filesystem::exists("Fonts/arial.ttf") || !font.loadFromFile("Fonts/arial.ttf")) {
         throw std::runtime_error("Brak czcionki Fonts/arial.ttf");
@@ -90,7 +91,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 for (const auto& pos : settlementSpots) {
                     if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
                         bool freeBuildSettlementTemp = true; 
-                        if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true)) {
+                        if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
                             lastSettlementPos[currentPlayer] = pos;
                             setupStep = 1; 
                         }
@@ -109,6 +110,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                         std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
                         bool freeBuildRoadTemp = true; 
                         if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoadTemp, true, lastSettlementPos[currentPlayer])) {
+                            logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje korytarz");
                             setupPlayerIndex++;
                             if (setupPlayerIndex >= static_cast<int>(players.size())) {
                                 setupPlayerIndex = 0;
@@ -149,6 +151,9 @@ void Game::handleGameEvents(const sf::Event& event) {
         diceButton.setPosition(static_cast<float>(window.getSize().x) - 180.f, 300.f);
         if (diceButton.getGlobalBounds().contains(mousePos)) {
             if (handleDiceRoll(players, currentPlayer, board, buildables, knight, hexSize)) {
+                int d1 = players[currentPlayer].getDice1();
+                int d2 = players[currentPlayer].getDice2();
+                logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " rzucił kostką, wypadło " + std::to_string(d1 + d2));
                 if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {
                     knightMoveMode = true;
                     knightMoveButtons.clear();
@@ -178,7 +183,8 @@ void Game::handleGameEvents(const sf::Event& event) {
             auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
             for (const auto& pos : settlementSpots) {
                 if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
-                    if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlement, setupPhase)) {
+                    if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlement, setupPhase, &logs)) {
+                        logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje akademik");
                         buildMode = BuildMode::None;
                     }
                     break;
@@ -196,6 +202,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 sf::Vector2f mid = (edge.first + edge.second) / 2.f;
                 if (std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
                     if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoad, setupPhase, lastSettlementPos[currentPlayer])) {
+                        logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje korytarz");
                         buildMode = BuildMode::None;
                     }
                     break;
@@ -206,6 +213,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 return;
             }
             if (tryBuildCity(buildables, players, currentPlayer, mousePos)) {
+                logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje kampus");
                 buildMode = BuildMode::None;
             }
         }
@@ -235,17 +243,11 @@ void Game::render() {
                 b->draw(window);
         }
 
-        sf::Text playerInfo;
-        playerInfo.setFont(font);
-        if (!turnManager.getPlayers().empty()) {
-            playerInfo.setString("Tura gracza: " + std::to_string(turnManager.getCurrentPlayer().getId() + 1));
-        } else {
-            playerInfo.setString("Brak graczy");
-        }
-        playerInfo.setCharacterSize(36);
-        playerInfo.setFillColor(sf::Color::White);
-        playerInfo.setPosition(30.f, 30.f);
-        window.draw(playerInfo);
+
+        float logsPanelWidth = 500.f;
+        float logsPanelX = 30.f;
+        float logsPanelY = 30.f;
+        logs.draw(window, logsPanelX, logsPanelY, logsPanelWidth);
 
         playerUI.drawAll(turnManager.getPlayers(), window);
 
@@ -255,14 +257,6 @@ void Game::render() {
             for (const auto& btn : buildButtons)
                 btn->draw(window);
         }
-
-        sf::Text turnText;
-        turnText.setFont(font);
-        turnText.setString("Tura: " + std::to_string(turnManager.getTurnCounter()));
-        turnText.setCharacterSize(28);
-        turnText.setFillColor(sf::Color::White);
-        turnText.setPosition(static_cast<float>(window.getSize().x) - turnText.getLocalBounds().width - 40.f, 30.f);
-        window.draw(turnText);
 
         sf::RectangleShape dice1(sf::Vector2f(60, 60));
         dice1.setPosition(static_cast<float>(window.getSize().x) - 180.f, 200.f);
@@ -303,6 +297,8 @@ void Game::render() {
 
         cardManager.buyCardButton->draw(window);
         cardManager.showCardsButton->draw(window);
+        sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
+        sf::Vector2f mousePos = window.mapPixelToCoords(mousePixel);
         if (cardManager.cardsVisible) {
             cardManager.showCards(window, font, turnManager.getCurrentPlayer());
             sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
@@ -342,45 +338,76 @@ void Game::render() {
             setupText.setPosition(window.getSize().x / 2.f - setupText.getLocalBounds().width / 2.f, 10.f);
             window.draw(setupText);
         }
+
+        std::string buildMsg;
+        if (playerButtons.size() > 0 && playerButtons[0]->isClicked(mousePos)) {
+            buildMsg = "Budowanie korytarza: 1x Kawa, 1x Kabel";
+        } else if (playerButtons.size() > 1 && playerButtons[1]->isClicked(mousePos)) {
+            buildMsg = "Budowanie akademika: 1x Pizza, 1x Piwo, 1x Notatki";
+        } else if (playerButtons.size() > 2 && playerButtons[2]->isClicked(mousePos)) {
+            buildMsg = "Budowanie kampusu: 2x Kawa, 2x Piwo, 2x Pizza";
+        } else if (cardManager.buyCardButton && cardManager.buyCardButton->isClicked(mousePos)) {
+            buildMsg = "Zakup karty: 1x Kabel, 1x Piwo, 1x Notatki";
+        }
+
+        if (!buildMsg.empty()) {
+            sf::Text buildInfo;
+            buildInfo.setFont(font);
+            buildInfo.setCharacterSize(28);
+            buildInfo.setFillColor(sf::Color::Cyan);
+            buildInfo.setStyle(sf::Text::Bold);
+            buildInfo.setString(buildMsg);
+            buildInfo.setPosition(30.f, 0.f);
+            window.draw(buildInfo);
+        }
     }
     window.display();
 }
 
 void Game::setupPlayerButtons() {
     playerButtons.clear();
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj drog�", sf::Vector2f(30, 350), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj korytarz", sf::Vector2f(30, 350), [&]() {
         buildMode = BuildMode::Road;
         buildButtons.clear();
         auto& players = turnManager.getPlayers();
         int currentPlayer = turnManager.getCurrentPlayerIndex();
         initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, players, currentPlayer, window);
     }));
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj osiedle", sf::Vector2f(30, 410), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj akademik", sf::Vector2f(30, 410), [&]() {
         buildMode = BuildMode::Settlement;
         buildButtons.clear();
         auto& players = turnManager.getPlayers();
         int currentPlayer = turnManager.getCurrentPlayerIndex();
         initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, players, currentPlayer, window);
     }));
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj miasto", sf::Vector2f(30, 470), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj kampus", sf::Vector2f(30, 470), [&]() {
         buildMode = BuildMode::City;
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Wymiana", sf::Vector2f(30, 530), [&]() {
         auto& players = turnManager.getPlayers();
         int currentPlayer = turnManager.getCurrentPlayerIndex();
         if (players.size() > 1) {
-            trade.startTrade(font, players, currentPlayer);
+            trade.startTrade(font, players, currentPlayer, &logs);
         }
     }));
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Nast�pna tura", sf::Vector2f(30, 590), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Kolejna tura", sf::Vector2f(30, 590), [&]() {
+        if (!turnManager.getPlayers().empty() && !turnManager.getCurrentPlayer().hasRolled()) {
+            logs.add("Najpierw rzuć kostką!");
+            return;
+        }
         turnManager.nextTurn();
+        logs.add("Tura gracza: " + std::to_string(turnManager.getCurrentPlayer().getId() + 1));
     }));
 
-    cardManager.buyCardButton = std::make_unique<SimpleButton>(font, "Kup kart�", sf::Vector2f(30, 650), [&]() {
+    cardManager.buyCardButton = std::make_unique<SimpleButton>(font, "Zakup karty", sf::Vector2f(30, 650), [&]() {
         if (!turnManager.getPlayers().empty()) cardManager.buyCard(turnManager.getCurrentPlayer());
     });
     cardManager.showCardsButton = std::make_unique<SimpleButton>(font, "Zobacz karty", sf::Vector2f(30, 710), [this]() {
         cardManager.cardsVisible = !cardManager.cardsVisible;
     });
 }
+
+
+
+
 

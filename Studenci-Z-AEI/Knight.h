@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <memory>
@@ -10,16 +10,16 @@
 // Klasa Rycerza
 class Knight {
 public:
-    // Indeks hexa, na którym stoi rycerz
+    // Indeks hexa, na ktÃ³rym stoi rycerz
     int tileIndex = -1;
 
     // Ustaw rycerza na danym polu (indeks w Board::tiles)
     void setPosition(int idx);
 
-    // Zwraca pozycjê rycerza (œrodek hexa)
+    // Zwraca pozycjÄ™ rycerza (Å›rodek hexa)
     sf::Vector2f getPosition(const std::vector<HexTile>& tiles) const;
 
-    // Rysowanie czarnego trójk¹ta na œrodku hexa
+    // Rysowanie czarnego trÃ³jkÄ…ta na Å›rodku hexa
     void draw(sf::RenderWindow& window, const std::vector<HexTile>& tiles, float hexSize) const;
 
     // Czy rycerz blokuje dany hex?
@@ -40,7 +40,7 @@ public:
     );
 };
 
-// Przycisk do przestawiania rycerza (okr¹g³y, jak do budowy)
+// Przycisk do przestawiania rycerza (okrÄ…gÅ‚y, jak do budowy)
 struct KnightMoveButton : public BuildSpotButton {
     int tileIdx;
     std::function<void(int)> moveCallback;

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <vector>
 #include <memory>
 #include <map>
@@ -40,13 +40,13 @@ struct FreeSettlementCard : public Card {
 struct MoveRobberCard : public Card {
     MoveRobberCard() : Card(CardType::MoveRobber) {}
     void use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight& knight, std::vector<Player>& players) override;
-    std::string getName() const override { return "Przenieœ z³odzieja"; }
+    std::string getName() const override { return "PrzenieÅ› zÅ‚odzieja"; }
 };
 
 struct VictoryPointCard : public Card {
     VictoryPointCard() : Card(CardType::VictoryPoint) {}
     void use(Player& player, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&) override;
-    std::string getName() const override { return "Punkt zwyciêstwa"; }
+    std::string getName() const override { return "Punkt zwyciÄ™stwa"; }
 };
 
 class CardManager {

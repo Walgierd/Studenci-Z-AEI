@@ -1,4 +1,4 @@
-#include "TurnManager.h"
+﻿#include "TurnManager.h"
 #include "Resource.h"
 
 TurnManager::TurnManager() : currentPlayerIndex(0), turnCounter(0) {}

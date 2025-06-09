@@ -1,4 +1,4 @@
-#include "HexTile.h"
+﻿#include "HexTile.h"
 #include <cmath>
 #include <string>
 
@@ -9,7 +9,7 @@ HexTile::HexTile(float x, float y, float size, ResourceType resource, int number
     hexShape.setPosition(position);
     switch (resourceType) {
     case ResourceType::Kawa:    hexShape.setFillColor(sf::Color(139, 69, 19)); break;
-    case ResourceType::Piwo:    hexShape.setFillColor(sf::Color(255, 215, 0)); break; // z�oty kolor piwa
+    case ResourceType::Piwo:    hexShape.setFillColor(sf::Color(255, 215, 0)); break; // złoty kolor piwa
     case ResourceType::Notatki: hexShape.setFillColor(sf::Color::White); break;
     case ResourceType::Pizza:   hexShape.setFillColor(sf::Color(255, 99, 71)); break;
     case ResourceType::Kabel:   hexShape.setFillColor(sf::Color(128, 128, 128)); break;

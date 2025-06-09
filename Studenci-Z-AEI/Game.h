@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Board.h"
 #include "Menu.h"
@@ -9,6 +9,7 @@
 #include "Trade.h"
 #include "Cards.h"
 #include "Resource.h"
+#include "Logs.h"
 #include "TurnManager.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
@@ -27,6 +28,7 @@ private:
     Menu menu;
     PlayerUI playerUI;
     sf::Font font;
+    Logs logs;
 
     bool inMenu;
     float hexSize;

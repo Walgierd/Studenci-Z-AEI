@@ -1,4 +1,4 @@
-#include "Resource.h"
+﻿#include "Resource.h"
 #include <string>
 
 std::string resourceName(ResourceType type) {

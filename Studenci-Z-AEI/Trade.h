@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -9,6 +9,7 @@
 #include "Resource.h"
 #include "SimpleButton.h"
 #include "UIButton.h"
+#include "Logs.h"
 
 struct TradeUI {
     bool exchangeMode = false;
@@ -18,9 +19,12 @@ struct TradeUI {
     std::vector<std::unique_ptr<UIButton>> exchangeButtons;
     std::vector<std::unique_ptr<UIButton>> exchangePlayerButtons;
     std::unique_ptr<UIButton> exchangeAcceptButton;
-
-    void startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer);
+	
+    void startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer, Logs* logs);
     void handleClick(const sf::Vector2f& mousePos, std::vector<Player>& players, int currentPlayer);
     void draw(sf::RenderWindow& window);
     void reset();
+
+public:
+    Logs* logs = nullptr;
 };

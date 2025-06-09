@@ -143,6 +143,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="HexTile.cpp" />
     <ClCompile Include="Knight.cpp" />
+    <ClCompile Include="Logs.cpp" />
     <ClCompile Include="Menago.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PlayerUI.cpp" />
@@ -151,7 +152,6 @@
     <ClCompile Include="Studenci-Z-AEI.cpp" />
     <ClCompile Include="Trade.cpp" />
     <ClCompile Include="TurnManager.cpp" />
-    <ClCompile Include="UIButton.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Board.h" />
@@ -162,6 +162,7 @@
     <ClInclude Include="HexTile.h" />
     <ClInclude Include="Knight.h" />
     <ClInclude Include="Libraries.h" />
+    <ClInclude Include="Logs.h" />
     <ClInclude Include="Menago.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Player.h" />

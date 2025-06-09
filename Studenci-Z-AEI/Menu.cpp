@@ -1,4 +1,4 @@
-#include "Menu.h"
+﻿#include "Menu.h"
 
 Menu::Menu(unsigned int width, unsigned int height) {
     this->width = width;

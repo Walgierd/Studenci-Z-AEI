@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "UIButton.h"
 #include <SFML/Graphics.hpp>
 #include <string>

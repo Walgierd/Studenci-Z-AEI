@@ -1,4 +1,4 @@
-#include "Cards.h"
+ï»¿#include "Cards.h"
 #include <random>
 #include <SFML/Graphics.hpp>
 #include "Menu.h"
@@ -9,16 +9,16 @@ bool freeKnightMove = false;
 
 void CardManager::buyCard(Player& player) {
     // Koszt: 1 kawa, 1 piwo, 1 notatki
-    if (player.getResourceCount(ResourceType::Kawa) < 1 ||
+    if (player.getResourceCount(ResourceType::Kabel) < 1 ||
         player.getResourceCount(ResourceType::Piwo) < 1 ||
         player.getResourceCount(ResourceType::Notatki) < 1)
         return;
 
-    player.removeResource(ResourceType::Kawa, 1);
+    player.removeResource(ResourceType::Kabel, 1);
     player.removeResource(ResourceType::Piwo, 1);
     player.removeResource(ResourceType::Notatki, 1);
 
-    // Losuj kartê
+
     std::vector<CardType> types = { CardType::FreeRoad, CardType::FreeSettlement, CardType::MoveRobber, CardType::VictoryPoint };
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -49,7 +49,7 @@ void CardManager::showCards(sf::RenderWindow& window, const sf::Font& font, Play
         window.draw(text);
         y += 40.f;
     }
-    // Dodaj obs³ugê klikniêcia na kartê, by j¹ u¿yæ (do integracji z UI)
+
 }
 
 void CardManager::useCard(
@@ -65,7 +65,7 @@ void CardManager::useCard(
     float hexSize,
     int currentPlayer,
     bool& freeBuildRoad,
-    bool& freeBuildSettlement, // <-- ADD THIS
+    bool& freeBuildSettlement, 
     bool& knightMoveMode,
     std::vector<std::unique_ptr<BuildSpotButton>>& knightMoveButtons
 ) {
@@ -76,7 +76,7 @@ void CardManager::useCard(
     if (type == CardType::FreeSettlement) {
         buildMode = BuildMode::Settlement;
         buildButtons.clear();
-        freeBuildSettlement = true; // <-- This now sets the correct flag!
+        freeBuildSettlement = true; 
         initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, players, currentPlayer, window);
     }
     else if (type == CardType::FreeRoad) {
@@ -101,11 +101,11 @@ void CardManager::useCard(
             ));
         }
     }
-    // Usuñ kartê po u¿yciu
+
     cards.erase(cards.begin() + idx);
 }
 
-// --- Implementacje efektów kart ---
+
 void FreeRoadCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&) {
     extern bool freeBuildRoad;
     freeBuildRoad = true;
@@ -122,6 +122,5 @@ void MoveRobberCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Boar
 }
 
 void VictoryPointCard::use(Player& player, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&) {
-    // Dodaj punkt zwyciêstwa (np. zwiêksz licznik punktów gracza)
-    // Mo¿esz dodaæ pole victoryPoints w Player
+
 }

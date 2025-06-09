@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <cmath>
@@ -8,6 +8,7 @@
 
 #include "Player.h"
 #include "Board.h"
+#include "Logs.h"   
 
 class Board;
 
@@ -250,7 +251,8 @@ bool tryBuildSettlement(
     const sf::Vector2f& pos,
     float minDist,
     bool& freeBuildSettlement,
-    bool setupPhase // nowy parametr
+    bool setupPhase,
+    Logs* logs
 );
 
 bool tryBuildRoad(
@@ -260,8 +262,8 @@ bool tryBuildRoad(
     const sf::Vector2f& start,
     const sf::Vector2f& end,
     bool& freeBuildRoad,
-    bool setupPhase, // nowy parametr
-    const sf::Vector2f& lastSettlementPos // nowy parametr
+    bool setupPhase, 
+    const sf::Vector2f& lastSettlementPos 
 );
 
 bool tryBuildCity(

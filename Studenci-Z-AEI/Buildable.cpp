@@ -1,5 +1,6 @@
+﻿
 #include "Buildable.h"
-#include "Player.h"
+
 
 
 bool tryBuildSettlement(
@@ -9,7 +10,8 @@ bool tryBuildSettlement(
     const sf::Vector2f& pos,
     float minDist,
     bool& freeBuildSettlement,
-    bool setupPhase
+    bool setupPhase,
+    Logs* logs 
 ) {
     if (!isSettlementFarEnough(buildables, pos, minDist))
         return false;
@@ -29,6 +31,7 @@ bool tryBuildSettlement(
         settlement->pos = pos;
         buildables.push_back(std::move(settlement));
         freeBuildSettlement = false;
+        if (logs) logs->add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje akademik");
         return true;
     }
     return false;

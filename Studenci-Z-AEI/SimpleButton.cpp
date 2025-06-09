@@ -1,4 +1,4 @@
-#include "SimpleButton.h"
+﻿#include "SimpleButton.h"
 
 SimpleButton::SimpleButton(const sf::Font& font, const std::string& text, sf::Vector2f pos, std::function<void()> callback)
     : callback(callback)

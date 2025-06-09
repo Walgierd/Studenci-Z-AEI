@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "HexTile.h"
 #include <vector>
 #include <random>
