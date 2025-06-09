@@ -150,25 +150,45 @@ void Game::handleGameEvents(const sf::Event& event) {
         sf::RectangleShape diceButton(sf::Vector2f(120, 50));
         diceButton.setPosition(static_cast<float>(window.getSize().x) - 180.f, 300.f);
         if (diceButton.getGlobalBounds().contains(mousePos)) {
-            if (handleDiceRoll(players, currentPlayer, board, buildables, knight, hexSize)) {
-                int d1 = players[currentPlayer].getDice1();
-                int d2 = players[currentPlayer].getDice2();
-                logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " rzucił kostką, wypadło " + std::to_string(d1 + d2));
-                if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {
-                    knightMoveMode = true;
-                    knightMoveButtons.clear();
-                    const auto& tiles = board.getTiles();
-                    for (size_t i = 0; i < tiles.size(); ++i) {
-                        if (static_cast<int>(i) == knight.tileIndex) continue;
-                        knightMoveButtons.push_back(std::make_unique<KnightMoveButton>(
-                            tiles[i].getPosition(), static_cast<int>(i),
-                            [&](int idx) {
-                                knight.setPosition(idx);
-                                knightMoveMode = false;
-                                knightMoveButtons.clear();
-                            }
-                        ));
-                    }
+            auto received = handleDiceRollWithLog(players, currentPlayer, board, buildables, knight, hexSize);
+            if (!players[currentPlayer].hasRolled()) return; 
+
+            int d1 = players[currentPlayer].getDice1();
+            int d2 = players[currentPlayer].getDice2();
+            logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " rzucił kostką, wypadło " + std::to_string(d1 + d2));
+
+            std::string resLog = "Otrzymane zasoby:";
+            bool anyResource = false;
+            for (const auto& [pid, resMap] : received) {
+                if (resMap.empty()) continue;
+                anyResource = true;
+                resLog += " Gracz " + std::to_string(pid + 1) + ":";
+                bool first = true;
+                for (const auto& [rtype, count] : resMap) {
+                    if (!first) resLog += ",";
+                    resLog += " " + std::to_string(count) + " " + resourceName(rtype);
+                    first = false;
+                }
+            }
+            if (!anyResource) {
+                resLog += " Nic";
+            }
+            logs.add(resLog);
+
+            if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {
+                knightMoveMode = true;
+                knightMoveButtons.clear();
+                const auto& tiles = board.getTiles();
+                for (size_t i = 0; i < tiles.size(); ++i) {
+                    if (static_cast<int>(i) == knight.tileIndex) continue;
+                    knightMoveButtons.push_back(std::make_unique<KnightMoveButton>(
+                        tiles[i].getPosition(), static_cast<int>(i),
+                        [&](int idx) {
+                            knight.setPosition(idx);
+                            knightMoveMode = false;
+                            knightMoveButtons.clear();
+                        }
+                    ));
                 }
             }
         }
@@ -406,6 +426,11 @@ void Game::setupPlayerButtons() {
         cardManager.cardsVisible = !cardManager.cardsVisible;
     });
 }
+
+
+
+
+
 
 
 

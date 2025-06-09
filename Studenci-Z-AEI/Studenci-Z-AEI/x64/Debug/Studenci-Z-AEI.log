@@ -1,27 +1,2 @@
-﻿  Board.cpp
-  Buildable.cpp
-  Cards.cpp
-  Game.cpp
-  HexTile.cpp
-  Knight.cpp
-  Logs.cpp
-  Menago.cpp
-  Menu.cpp
-  PlayerUI.cpp
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244: 'initializing': conversion from 'T' to 'float', possible loss of data
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244:         with
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244:         [
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244:             T=unsigned int
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(30,23): warning C4244:         ]
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244: 'initializing': conversion from 'T' to 'float', possible loss of data
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244:         with
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244:         [
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244:             T=unsigned int
-C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(31,24): warning C4244:         ]
-  Resource.cpp
-  SimpleButton.cpp
-  Studenci-Z-AEI.cpp
-  Trade.cpp
-  TurnManager.cpp
-  Generating Code...
+﻿  Game.cpp
   Studenci-Z-AEI.vcxproj -> C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe

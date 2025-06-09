@@ -10,6 +10,7 @@
 #include "Cards.h"
 #include "Resource.h"
 #include "Logs.h"
+#include "Menago.h"
 #include "TurnManager.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
