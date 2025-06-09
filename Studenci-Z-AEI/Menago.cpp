@@ -7,7 +7,6 @@ void nextPlayerTurn(std::vector<Player>& players, int& currentPlayer, int& turnC
     if (!players.empty()) {
         currentPlayer = (currentPlayer + 1) % players.size();
         if (currentPlayer == 0 && !players[currentPlayer].hasRolled()) {
-            // Możesz dodać dodatkową logikę na początek nowej rundy
         }
         if (currentPlayer == 0) ++turnCounter;
     }
@@ -33,7 +32,8 @@ bool handleDiceRoll(
             for (const auto& b : buildables) {
                 if (auto* s = dynamic_cast<Settlement*>(b.get())) {
                     if (std::hypot(s->pos.x - tile.getPosition().x, s->pos.y - tile.getPosition().y) < hexSize + 2) {
-                        players[s->ownerId].addResource(tile.getResourceType(), s->isCity ? 2 : 1);
+                        int amount = s->isCity ? 2 : 1;
+                        players[s->ownerId].addResource(tile.getResourceType(), amount);
                     }
                 }
             }

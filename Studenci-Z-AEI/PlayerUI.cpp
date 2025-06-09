@@ -29,11 +29,17 @@ void PlayerUI::draw(const Player& player, sf::RenderWindow& window, float x, flo
 void PlayerUI::drawAll(const std::vector<Player>& players, sf::RenderWindow& window) const {
     float windowWidth = window.getSize().x;
     float windowHeight = window.getSize().y;
-    float playerWidth = windowWidth / players.size();
-    float y = windowHeight - 180.f; // Odległość od dołu
+    float panelWidth = 180.f; 
+    float margin = 12.f;      
+    float spacing = 5.f;     
+    float y = windowHeight - 200.f; 
+
+ 
+    float totalWidth = players.size() * panelWidth + (players.size() - 1) * spacing;
+    float startX = windowWidth - totalWidth - margin;
 
     for (size_t i = 0; i < players.size(); ++i) {
-        float x = i * playerWidth + 20.f; // Odstęp od lewej krawędzi
+        float x = startX + i * (panelWidth + spacing);
         draw(players[i], window, x, y);
     }
 }

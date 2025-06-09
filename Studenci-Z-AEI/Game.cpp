@@ -21,6 +21,8 @@ Game::Game()
       setupStep(0),
       setupPlayerIndex(0),
       logs(font)
+      
+	
 {
     if (!std::filesystem::exists("Fonts/arial.ttf") || !font.loadFromFile("Fonts/arial.ttf")) {
         throw std::runtime_error("Brak czcionki Fonts/arial.ttf");
@@ -54,7 +56,7 @@ void Game::handleEvents() {
         if (inMenu)
             handleMenuEvents(event);
         else
-            handleGameEvents(event);
+            handleGameEvents(event); 
     }
 }
 
@@ -64,6 +66,13 @@ void Game::handleMenuEvents(const sf::Event& event) {
         if (menu.isStartClicked(mousePos)) {
             int playerCount = menu.getSelectedPlayerCount();
             turnManager.initialize(playerCount);
+            for (auto& player : turnManager.getPlayers()) {
+                player.addResource(ResourceType::Pizza, 10);
+                player.addResource(ResourceType::Piwo, 10);
+                player.addResource(ResourceType::Notatki, 10);
+                player.addResource(ResourceType::Kawa, 10);
+                player.addResource(ResourceType::Kabel, 10);
+            }
             inMenu = false;
         }
         if (menu.isFullscreenClicked(mousePos)) {
@@ -75,25 +84,22 @@ void Game::handleMenuEvents(const sf::Event& event) {
 void Game::handleGameEvents(const sf::Event& event) {
     if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
         sf::Vector2f mousePos = window.mapPixelToCoords({ event.mouseButton.x, event.mouseButton.y });
-    if (setupPhase) {
 
-        if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-            sf::Vector2f mousePos = window.mapPixelToCoords({ event.mouseButton.x, event.mouseButton.y });
-
+        if (setupPhase) {
             auto& players = turnManager.getPlayers();
             int currentPlayer = setupPlayerIndex;
 
-            if (setupStep == 0) { 
+            if (setupStep == 0) {
                 std::vector<sf::Vector2f> hexCenters;
                 for (const auto& tile : board.getTiles())
                     hexCenters.push_back(tile.getPosition());
                 auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
                 for (const auto& pos : settlementSpots) {
                     if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
-                        bool freeBuildSettlementTemp = true; 
+                        bool freeBuildSettlementTemp = true;
                         if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
                             lastSettlementPos[currentPlayer] = pos;
-                            setupStep = 1; 
+                            setupStep = 1;
                         }
                         break;
                     }
@@ -108,32 +114,39 @@ void Game::handleGameEvents(const sf::Event& event) {
                     if ((std::hypot(lastSettlementPos[currentPlayer].x - edge.first.x, lastSettlementPos[currentPlayer].y - edge.first.y) < 1.f ||
                          std::hypot(lastSettlementPos[currentPlayer].x - edge.second.x, lastSettlementPos[currentPlayer].y - edge.second.y) < 1.f) &&
                         std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
-                        bool freeBuildRoadTemp = true; 
-                        if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoadTemp, true, lastSettlementPos[currentPlayer])) {
-                            logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje korytarz");
+                        bool freeBuildRoadTemp = true;
+                        if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoadTemp, true, lastSettlementPos[currentPlayer], &logs)) {
                             setupPlayerIndex++;
                             if (setupPlayerIndex >= static_cast<int>(players.size())) {
                                 setupPlayerIndex = 0;
                                 setupTurn++;
                                 if (setupTurn >= 2) {
-                                    setupPhase = false; 
+                                    setupPhase = false;
                                 }
                             }
-                            setupStep = 0; 
+                            setupStep = 0;
                         }
                         break;
                     }
                 }
             }
+            return;
         }
-        return; 
-    }
-
 
         auto& players = turnManager.getPlayers();
         int currentPlayer = turnManager.getCurrentPlayerIndex();
 
-        if (trade.exchangeMode) {
+        // Wymuś rzut kostką przed innymi akcjami (poza rzutem)
+        sf::RectangleShape diceButton(sf::Vector2f(120, 50));
+        diceButton.setPosition(static_cast<float>(window.getSize().x) - 180.f, 300.f);
+        bool diceClicked = diceButton.getGlobalBounds().contains(mousePos);
+
+        if (!players[currentPlayer].hasRolled() && !diceClicked) {
+            logs.add("Najpierw rzuć kostką!");
+            return;
+        }
+
+        if (trade.exchangeMode) {   
             trade.handleClick(mousePos, players, currentPlayer);
             return;
         }
@@ -147,9 +160,7 @@ void Game::handleGameEvents(const sf::Event& event) {
         if (cardManager.buyCardButton->isClicked(mousePos)) cardManager.buyCardButton->onClick();
         if (cardManager.showCardsButton->isClicked(mousePos)) cardManager.showCardsButton->onClick();
 
-        sf::RectangleShape diceButton(sf::Vector2f(120, 50));
-        diceButton.setPosition(static_cast<float>(window.getSize().x) - 180.f, 300.f);
-        if (diceButton.getGlobalBounds().contains(mousePos)) {
+        if (diceClicked) {
             auto received = handleDiceRollWithLog(players, currentPlayer, board, buildables, knight, hexSize);
             if (!players[currentPlayer].hasRolled()) return; 
 
@@ -191,12 +202,10 @@ void Game::handleGameEvents(const sf::Event& event) {
                     ));
                 }
             }
+            return; // Po rzucie nie wykonuj innych akcji w tej iteracji kliknięcia
         }
 
         if (buildMode == BuildMode::Settlement) {
-            if (!setupPhase && !players[currentPlayer].hasRolled()) {
-                return;
-            }
             std::vector<sf::Vector2f> hexCenters;
             for (const auto& tile : board.getTiles())
                 hexCenters.push_back(tile.getPosition());
@@ -211,9 +220,6 @@ void Game::handleGameEvents(const sf::Event& event) {
                 }
             }
         } else if (buildMode == BuildMode::Road) {
-            if (!setupPhase && !players[currentPlayer].hasRolled()) {
-                return;
-            }
             std::vector<sf::Vector2f> hexCenters;
             for (const auto& tile : board.getTiles())
                 hexCenters.push_back(tile.getPosition());
@@ -221,7 +227,8 @@ void Game::handleGameEvents(const sf::Event& event) {
             for (const auto& edge : roadSpots) {
                 sf::Vector2f mid = (edge.first + edge.second) / 2.f;
                 if (std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
-                    if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoad, setupPhase, lastSettlementPos[currentPlayer])) {
+                    bool valid = tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoad, setupPhase, lastSettlementPos[currentPlayer], &logs);
+                    if (valid || (freeBuildRoad && isRoadConnected(buildables, edge.first, edge.second, players[currentPlayer].getId()))) {
                         logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje korytarz");
                         buildMode = BuildMode::None;
                     }
@@ -229,12 +236,52 @@ void Game::handleGameEvents(const sf::Event& event) {
                 }
             }
         } else if (buildMode == BuildMode::City) {
-            if (!setupPhase && !players[currentPlayer].hasRolled()) {
-                return;
-            }
             if (tryBuildCity(buildables, players, currentPlayer, mousePos)) {
                 logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje kampus");
                 buildMode = BuildMode::None;
+            }
+        }
+
+        // --- Obsługa kliknięcia w kartę gracza ---
+        if (cardManager.cardsVisible && !turnManager.getPlayers().empty()) {
+            int currentPlayerId = turnManager.getCurrentPlayer().getId();
+            auto& playerCardsMap = cardManager.getPlayerCards();
+            auto it = playerCardsMap.find(currentPlayerId);
+            if (it != playerCardsMap.end()) {
+                auto& cards = it->second;
+                float cardPanelX = static_cast<float>(window.getSize().x) - 420.f;
+                float cardPanelY = 400.f;
+                float cardWidth = 400.f;
+                float cardHeight = 40.f;
+                for (size_t i = 0; i < cards.size(); ++i) {
+                    sf::FloatRect cardRect(cardPanelX, cardPanelY + i * (cardHeight + 10.f), cardWidth, cardHeight);
+                    if (cardRect.contains(mousePos)) {
+                        if (turnManager.getCurrentPlayer().hasUsedCardThisTurn()) {
+                            logs.add("Możesz użyć tylko jednej karty na turę!");
+                            return;
+                        }
+                        cardManager.useCard(
+                            i,
+                            turnManager.getCurrentPlayer(),
+                            buildables,
+                            board,
+                            knight,
+                            turnManager.getPlayers(),
+                            buildMode,
+                            buildButtons,
+                            window,
+                            hexSize,
+                            turnManager.getCurrentPlayerIndex(),
+                            freeBuildRoad,
+                            freeBuildSettlement,
+                            knightMoveMode,
+                            knightMoveButtons
+                        );
+                        turnManager.getCurrentPlayer().setUsedCardThisTurn(true);
+                        logs.add("Gracz " + std::to_string(turnManager.getCurrentPlayer().getId() + 1) + " użył karty.");
+                        return;
+                    }
+                }
             }
         }
     }
@@ -262,7 +309,6 @@ void Game::render() {
             for (const auto& b : buildables)
                 b->draw(window);
         }
-
 
         float logsPanelWidth = 500.f;
         float logsPanelX = 30.f;
@@ -319,19 +365,6 @@ void Game::render() {
         cardManager.showCardsButton->draw(window);
         sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
         sf::Vector2f mousePos = window.mapPixelToCoords(mousePixel);
-        if (cardManager.cardsVisible) {
-            cardManager.showCards(window, font, turnManager.getCurrentPlayer());
-            sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
-            sf::Vector2f mousePos = window.mapPixelToCoords(mousePixel);
-            const auto& cards = cardManager.getPlayerCards().at(turnManager.getCurrentPlayer().getId());
-            float y = 200.f;
-            for (size_t i = 0; i < cards.size(); ++i) {
-                sf::FloatRect cardRect(400.f, y, 400.f, 40.f);
-                if (cardRect.contains(mousePos)) {
-                }
-                y += 40.f;
-            }
-        }
 
         knight.draw(window, board.getTiles(), hexSize);
 
@@ -380,6 +413,36 @@ void Game::render() {
             buildInfo.setPosition(30.f, 0.f);
             window.draw(buildInfo);
         }
+
+        // --- Wyświetlanie kart gracza po prawej stronie ---
+        if (cardManager.cardsVisible && !turnManager.getPlayers().empty()) {
+            int currentPlayerId = turnManager.getCurrentPlayer().getId();
+            const auto& playerCardsMap = cardManager.getPlayerCards();
+            auto it = playerCardsMap.find(currentPlayerId);
+            if (it != playerCardsMap.end()) {
+                const auto& cards = it->second;
+                float cardPanelX = static_cast<float>(window.getSize().x) - 420.f;
+                float cardPanelY = 400.f;
+                float cardWidth = 400.f;
+                float cardHeight = 40.f;
+                for (size_t i = 0; i < cards.size(); ++i) {
+                    sf::RectangleShape cardRect(sf::Vector2f(cardWidth, cardHeight));
+                    cardRect.setPosition(cardPanelX, cardPanelY + i * (cardHeight + 10.f));
+                    cardRect.setFillColor(sf::Color(60, 60, 120, 200));
+                    cardRect.setOutlineColor(sf::Color::White);
+                    cardRect.setOutlineThickness(2.f);
+                    window.draw(cardRect);
+
+                    sf::Text cardText;
+                    cardText.setFont(font);
+                    cardText.setString(cards[i]->getName());
+                    cardText.setCharacterSize(24);
+                    cardText.setFillColor(sf::Color::White);
+                    cardText.setPosition(cardPanelX + 10.f, cardPanelY + i * (cardHeight + 10.f) + 5.f);
+                    window.draw(cardText);
+                }
+            }
+        }
     }
     window.display();
 }
@@ -417,22 +480,21 @@ void Game::setupPlayerButtons() {
         }
         turnManager.nextTurn();
         logs.add("Tura gracza: " + std::to_string(turnManager.getCurrentPlayer().getId() + 1));
+        for (auto& player : turnManager.getPlayers()) {
+            player.setUsedCardThisTurn(false);
+        }
     }));
 
     cardManager.buyCardButton = std::make_unique<SimpleButton>(font, "Zakup karty", sf::Vector2f(30, 650), [&]() {
-        if (!turnManager.getPlayers().empty()) cardManager.buyCard(turnManager.getCurrentPlayer());
+        if (!turnManager.getPlayers().empty()) {
+            auto& player = turnManager.getCurrentPlayer();
+            std::string cardName = cardManager.buyCardWithMessage(player);
+            if (!cardName.empty()) {
+                logs.add("Gracz " + std::to_string(player.getId() + 1) + " zakupił kartę. Karta to: " + cardName);
+            }
+        }
     });
     cardManager.showCardsButton = std::make_unique<SimpleButton>(font, "Zobacz karty", sf::Vector2f(30, 710), [this]() {
         cardManager.cardsVisible = !cardManager.cardsVisible;
     });
 }
-
-
-
-
-
-
-
-
-
-

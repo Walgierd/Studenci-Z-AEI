@@ -53,11 +53,11 @@ std::vector<ResourceType> Board::shuffledResources() {
 std::vector<int> Board::shuffledNumbers() {
     std::vector<int> numbers;
     for (int i = 2; i <= 12; ++i) {
+        if (i == 12) continue; 
         numbers.push_back(i);
         numbers.push_back(i);
     }
 
-    numbers.pop_back();
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(numbers.begin(), numbers.end(), g);

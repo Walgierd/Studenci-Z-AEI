@@ -37,9 +37,13 @@ public:
     int getDice2() const { return dice2; }
     bool hasRolled() const { return hasRolledThisTurn; }
 
+    void setUsedCardThisTurn(bool used) { usedCardThisTurn = used; }
+    bool hasUsedCardThisTurn() const { return usedCardThisTurn; }
+
 private:
     int id;
     std::map<ResourceType, int> resources;
     bool hasRolledThisTurn;
     int dice1, dice2;
+    bool usedCardThisTurn = false;
 };

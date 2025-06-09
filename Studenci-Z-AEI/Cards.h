@@ -21,7 +21,16 @@ struct Card {
     CardType type;
     Card(CardType t) : type(t) {}
     virtual ~Card() = default;
-    virtual void use(Player& player, std::vector<std::unique_ptr<Buildable>>& buildables, Board& board, Knight& knight, std::vector<Player>& players) = 0;
+    virtual void use(
+        Player& player,
+        std::vector<std::unique_ptr<Buildable>>& buildables,
+        Board& board,
+        Knight& knight,
+        std::vector<Player>& players,
+        bool& freeBuildRoad,
+        bool& freeBuildSettlement,
+        bool& knightMoveMode
+    ) = 0;
     virtual std::string getName() const = 0;
 };
 
@@ -45,13 +54,23 @@ struct MoveRobberCard : public Card {
 
 struct VictoryPointCard : public Card {
     VictoryPointCard() : Card(CardType::VictoryPoint) {}
-    void use(Player& player, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&) override;
+    void use(
+        Player& player,
+        std::vector<std::unique_ptr<Buildable>>& buildables,
+        Board& board,
+        Knight& knight,
+        std::vector<Player>& players,
+        bool& freeBuildRoad,
+        bool& freeBuildSettlement,
+        bool& knightMoveMode
+    ) override;
     std::string getName() const override { return "Punkt zwycięstwa"; }
 };
 
 class CardManager {
 public:
-    void buyCard(Player& player);
+    std::string buyCardWithMessage(Player& player); 
+
     void showCards(sf::RenderWindow& window, const sf::Font& font, Player& player);
     void useCard(
         size_t idx,
@@ -81,6 +100,6 @@ public:
     bool cardsVisible = false;
 
 private:
-    std::map<int, std::vector<std::unique_ptr<Card>>> playerCards; // Map player ID to their cards
+    std::map<int, std::vector<std::unique_ptr<Card>>> playerCards; 
 };
 

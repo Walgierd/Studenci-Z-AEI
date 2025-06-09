@@ -2,22 +2,22 @@
 #include <random>
 #include <SFML/Graphics.hpp>
 #include "Menu.h"
+#include "Buildable.h"
+#include "Logs.h"
 
 bool freeBuildRoad = false;
 bool freeBuildSettlement = false;
 bool freeKnightMove = false;
 
-void CardManager::buyCard(Player& player) {
-    // Koszt: 1 kawa, 1 piwo, 1 notatki
+std::string CardManager::buyCardWithMessage(Player& player) {
     if (player.getResourceCount(ResourceType::Kabel) < 1 ||
         player.getResourceCount(ResourceType::Piwo) < 1 ||
         player.getResourceCount(ResourceType::Notatki) < 1)
-        return;
+        return "";
 
     player.removeResource(ResourceType::Kabel, 1);
     player.removeResource(ResourceType::Piwo, 1);
     player.removeResource(ResourceType::Notatki, 1);
-
 
     std::vector<CardType> types = { CardType::FreeRoad, CardType::FreeSettlement, CardType::MoveRobber, CardType::VictoryPoint };
     std::random_device rd;
@@ -26,13 +26,23 @@ void CardManager::buyCard(Player& player) {
     CardType drawn = types[dist(gen)];
 
     std::unique_ptr<Card> card;
-    switch (drawn) {
-    case CardType::FreeRoad: card = std::make_unique<FreeRoadCard>(); break;
-    case CardType::FreeSettlement: card = std::make_unique<FreeSettlementCard>(); break;
-    case CardType::MoveRobber: card = std::make_unique<MoveRobberCard>(); break;
-    case CardType::VictoryPoint: card = std::make_unique<VictoryPointCard>(); break;
+    switch (static_cast<int>(drawn)) {
+    case static_cast<int>(CardType::FreeRoad): 
+        card = std::make_unique<FreeRoadCard>(); 
+        break;
+    case static_cast<int>(CardType::FreeSettlement): 
+        card = std::make_unique<FreeSettlementCard>(); 
+        break;
+    case static_cast<int>(CardType::MoveRobber): 
+        card = std::make_unique<MoveRobberCard>(); 
+        break;
+    case static_cast<int>(CardType::VictoryPoint): 
+        card = std::make_unique<VictoryPointCard>(); 
+        break;
     }
+    std::string cardName = card->getName();
     playerCards[player.getId()].push_back(std::move(card));
+    return cardName;
 }
 
 void CardManager::showCards(sf::RenderWindow& window, const sf::Font& font, Player& player) {
@@ -49,7 +59,6 @@ void CardManager::showCards(sf::RenderWindow& window, const sf::Font& font, Play
         window.draw(text);
         y += 40.f;
     }
-
 }
 
 void CardManager::useCard(
@@ -69,24 +78,25 @@ void CardManager::useCard(
     bool& knightMoveMode,
     std::vector<std::unique_ptr<BuildSpotButton>>& knightMoveButtons
 ) {
-    auto& cards = playerCards[player.getId()];
-    if (idx >= cards.size()) return;
-    CardType type = cards[idx]->type;
+    auto it = playerCards.find(player.getId());
+    if (it == playerCards.end() || idx >= it->second.size()) {
+        Logs logs(sf::Font(), 10);
+        logs.add("Niepoprawny index karty.");
+        return;
+    }
 
-    if (type == CardType::FreeSettlement) {
-        buildMode = BuildMode::Settlement;
-        buildButtons.clear();
-        freeBuildSettlement = true; 
-        initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, players, currentPlayer, window);
+    auto& card = it->second[idx];
+    if (player.hasUsedCardThisTurn()) {
+        Logs logs(sf::Font(), 10); 
+        logs.add("Gracz użył już karty w tej turze.");
+        return;
     }
-    else if (type == CardType::FreeRoad) {
-        buildMode = BuildMode::Road;
-        buildButtons.clear();
-        freeBuildRoad = true;
-        initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, players, currentPlayer, window);
-    }
-    else if (type == CardType::MoveRobber) {
-        knightMoveMode = true;
+
+    // Przekazuj flagi do use!
+    card->use(player, buildables, board, knight, players, freeBuildRoad, freeBuildSettlement, knightMoveMode);
+
+    // Jeśli knightMoveMode zostało ustawione, przygotuj przyciski
+    if (knightMoveMode) {
         knightMoveButtons.clear();
         const auto& tiles = board.getTiles();
         for (size_t i = 0; i < tiles.size(); ++i) {
@@ -102,25 +112,33 @@ void CardManager::useCard(
         }
     }
 
-    cards.erase(cards.begin() + idx);
+    player.setUsedCardThisTurn(true);
+    it->second.erase(it->second.begin() + idx);
 }
 
 
-void FreeRoadCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&) {
-    extern bool freeBuildRoad;
+void FreeRoadCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool& freeBuildRoad, bool&, bool&) {
     freeBuildRoad = true;
 }
-
-void FreeSettlementCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&) {
-    extern bool freeBuildSettlement;
+void FreeSettlementCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool&, bool& freeBuildSettlement, bool&) {
     freeBuildSettlement = true;
 }
-
-void MoveRobberCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&) {
-    extern bool freeKnightMove;
-    freeKnightMove = true;
+void MoveRobberCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool&, bool&, bool& knightMoveMode) {
+    knightMoveMode = true;
+}
+void VictoryPointCard::use(Player& player, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool&, bool&, bool&) {
+    
 }
 
-void VictoryPointCard::use(Player& player, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&) {
+// Implementation of FreeRoadCard::use
+void FreeRoadCard::use(Player& player, std::vector<std::unique_ptr<Buildable>>& buildables, Board& board, Knight&, std::vector<Player>&) {
+    // Enable free road building for the player
+    player.setUsedCardThisTurn(true);
+    bool freeBuildRoad = true;
 
+    // Log the action (if Logs class is available in the context)
+    Logs* logs = board.getLogs(); // Assuming Board has a method to get Logs
+    if (logs) {
+        logs->add("Player " + std::to_string(player.getId()) + " used Free Road Card.");
+    }
 }
