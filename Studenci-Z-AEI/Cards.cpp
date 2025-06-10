@@ -116,29 +116,45 @@ void CardManager::useCard(
     it->second.erase(it->second.begin() + idx);
 }
 
-
-void FreeRoadCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool& freeBuildRoad, bool&, bool&) {
+void FreeRoadCard::use(
+    Player&,
+    std::vector<std::unique_ptr<Buildable>>&,
+    Board&,
+    Knight&,
+    std::vector<Player>&,
+    bool& freeBuildRoad,
+    bool&,
+    bool&
+) {
     freeBuildRoad = true;
 }
-void FreeSettlementCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool&, bool& freeBuildSettlement, bool&) {
+
+void FreeSettlementCard::use(
+    Player&,
+    std::vector<std::unique_ptr<Buildable>>&,
+    Board&,
+    Knight&,
+    std::vector<Player>&,
+    bool&,
+    bool& freeBuildSettlement,
+    bool&
+) {
     freeBuildSettlement = true;
 }
-void MoveRobberCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool&, bool&, bool& knightMoveMode) {
+
+void MoveRobberCard::use(
+    Player&,
+    std::vector<std::unique_ptr<Buildable>>&,
+    Board&,
+    Knight&,
+    std::vector<Player>&,
+    bool&,
+    bool&,
+    bool& knightMoveMode
+) {
     knightMoveMode = true;
 }
+
 void VictoryPointCard::use(Player& player, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool&, bool&, bool&) {
     
-}
-
-// Implementation of FreeRoadCard::use
-void FreeRoadCard::use(Player& player, std::vector<std::unique_ptr<Buildable>>& buildables, Board& board, Knight&, std::vector<Player>&) {
-    // Enable free road building for the player
-    player.setUsedCardThisTurn(true);
-    bool freeBuildRoad = true;
-
-    // Log the action (if Logs class is available in the context)
-    Logs* logs = board.getLogs(); // Assuming Board has a method to get Logs
-    if (logs) {
-        logs->add("Player " + std::to_string(player.getId()) + " used Free Road Card.");
-    }
 }
