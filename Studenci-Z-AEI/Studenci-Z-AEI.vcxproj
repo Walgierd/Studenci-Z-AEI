@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bank.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Buildable.cpp" />
     <ClCompile Include="Cards.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="TurnManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bank.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Buildable.h" />
     <ClInclude Include="Cards.h" />

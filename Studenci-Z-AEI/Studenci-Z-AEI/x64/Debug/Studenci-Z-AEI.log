@@ -1,5 +1,9 @@
-﻿  Cards.cpp
+﻿  Buildable.cpp
+  Cards.cpp
   Game.cpp
+  Knight.cpp
+  Menago.cpp
+  SimpleButton.cpp
   Studenci-Z-AEI.cpp
   Generating Code...
   Studenci-Z-AEI.vcxproj -> C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe

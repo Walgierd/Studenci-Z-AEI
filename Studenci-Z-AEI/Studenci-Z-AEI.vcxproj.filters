@@ -66,6 +66,9 @@
     <ClCompile Include="SimpleButton.cpp">
       <Filter>Source Files\Source Mains</Filter>
     </ClCompile>
+    <ClCompile Include="Bank.cpp">
+      <Filter>Source Files\Source Mains</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HexTile.h">
@@ -123,6 +126,9 @@
       <Filter>Header Files\Source Headers</Filter>
     </ClInclude>
     <ClInclude Include="UIButton.h">
+      <Filter>Header Files\Source Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Bank.h">
       <Filter>Header Files\Source Headers</Filter>
     </ClInclude>
   </ItemGroup>
