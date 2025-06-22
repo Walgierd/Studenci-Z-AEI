@@ -160,16 +160,45 @@ void Game::handleGameEvents(const sf::Event& event) {
                 for (const auto& tile : board.getTiles())
                     hexCenters.push_back(tile.getPosition());
                 auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
-                for (const auto& pos : settlementSpots) {
-                    if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
-                        bool freeBuildSettlementTemp = true;
-                        if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
-                            lastSettlementPos[currentPlayer] = pos;
-                            setupStep = 1;
+
+                // Dodaj to: inicjalizuj buildButtons tylko raz na wejście do setupStep == 0
+                if (buildButtons.empty()) {
+                    buildButtons.clear();
+                    for (const auto& pos : settlementSpots) {
+                        // Sprawdź czy miejsce jest wolne i wystarczająco daleko od innych
+                        bool occupied = false;
+                        for (const auto& b : buildables) {
+                            if (auto* s = dynamic_cast<Settlement*>(b.get())) {
+                                if (std::hypot(s->pos.x - pos.x, s->pos.y - pos.y) < 1.0f) {
+                                    occupied = true;
+                                    break;
+                                }
+                            }
                         }
+                        if (!occupied) {
+                            buildButtons.push_back(std::make_unique<SettlementSpotButton>(pos, [this, pos](const sf::Vector2f&) {
+                                // Wywołaj logikę budowy jak w poniższej pętli
+                                bool freeBuildSettlementTemp = true;
+                                auto& players = turnManager.getPlayers();
+                                int currentPlayer = setupPlayerIndex;
+                                if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
+                                    lastSettlementPos[currentPlayer] = pos;
+                                    setupStep = 1;
+                                    buildButtons.clear(); // Ukryj przyciski po wyborze
+                                }
+                            }));
+                        }
+                    }
+                }
+
+                // Oryginalna pętla po settlementSpots może zostać, ale buildButtons przejmą obsługę kliknięcia
+                for (auto& btn : buildButtons) {
+                    if (btn->isClicked(mousePos)) {
+                        btn->onClick();
                         break;
                     }
                 }
+                return;
             }
             else if (setupStep == 1) {
                 std::vector<sf::Vector2f> hexCenters;
@@ -192,6 +221,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                                 }
                             }
                             setupStep = 0;
+                            buildButtons.clear(); // <-- to jest kluczowe!
                         }
                         break;
                     }
@@ -327,6 +357,84 @@ void Game::update() {
     for (const auto& p : turnManager.getPlayers()) {
         if (p.getId() >= 0) scoringPlayers.push_back(p);
     }
+
+    if (setupPhase) {
+        if (setupStep == 0 && buildButtons.empty()) {
+            buildButtons.clear();
+            std::vector<sf::Vector2f> hexCenters;
+            for (const auto& tile : board.getTiles())
+                hexCenters.push_back(tile.getPosition());
+            auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
+            for (const auto& pos : settlementSpots) {
+                bool occupied = false;
+                for (const auto& b : buildables) {
+                    if (auto* s = dynamic_cast<Settlement*>(b.get())) {
+                        if (std::hypot(s->pos.x - pos.x, s->pos.y - pos.y) < 1.0f) {
+                            occupied = true;
+                            break;
+                        }
+                    }
+                }
+                if (!occupied) {
+                    buildButtons.push_back(std::make_unique<SettlementSpotButton>(pos, [this, pos](const sf::Vector2f&) {
+                        bool freeBuildSettlementTemp = true;
+                        auto& players = turnManager.getPlayers();
+                        int currentPlayer = setupPlayerIndex;
+                        if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
+                            lastSettlementPos[currentPlayer] = pos;
+                            setupStep = 1;
+                            buildButtons.clear();
+                        }
+                    }));
+                }
+            }
+        }
+        if (setupStep == 1 && buildButtons.empty()) {
+            buildButtons.clear();
+            std::vector<sf::Vector2f> hexCenters;
+            for (const auto& tile : board.getTiles())
+                hexCenters.push_back(tile.getPosition());
+            auto roadSpots = getUniqueHexEdges(hexCenters, hexSize);
+            for (const auto& edge : roadSpots) {
+                sf::Vector2f mid = (edge.first + edge.second) / 2.f;
+                if (std::hypot(lastSettlementPos[setupPlayerIndex].x - edge.first.x, lastSettlementPos[setupPlayerIndex].y - edge.first.y) < 1.f ||
+                    std::hypot(lastSettlementPos[setupPlayerIndex].x - edge.second.x, lastSettlementPos[setupPlayerIndex].y - edge.second.y) < 1.f) {
+                    bool occupied = false;
+                    for (const auto& b : buildables) {
+                        if (auto* r = dynamic_cast<Road*>(b.get())) {
+                            bool same = (std::hypot(r->start.x - edge.first.x, r->start.y - edge.first.y) < 1.0f &&
+                                         std::hypot(r->end.x - edge.second.x, r->end.y - edge.second.y) < 1.0f);
+                            bool reverse = (std::hypot(r->start.x - edge.second.x, r->start.y - edge.second.y) < 1.0f &&
+                                            std::hypot(r->end.x - edge.first.x, r->end.y - edge.first.y) < 1.0f);
+                            if (same || reverse) {
+                                occupied = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!occupied) {
+                        buildButtons.push_back(std::make_unique<RoadSpotButton>(edge.first, edge.second, [this, edge](const sf::Vector2f&, const sf::Vector2f&) {
+                            bool freeBuildRoadTemp = true;
+                            auto& players = turnManager.getPlayers();
+                            int currentPlayer = setupPlayerIndex;
+                            if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoadTemp, true, lastSettlementPos[currentPlayer], &logs)) {
+                                setupPlayerIndex++;
+                                if (setupPlayerIndex >= static_cast<int>(players.size())) {
+                                    setupPlayerIndex = 0;
+                                    setupTurn++;
+                                    if (setupTurn >= 2) {
+                                        setupPhase = false;
+                                    }
+                                }
+                                setupStep = 0;
+                                buildButtons.clear();
+                            }
+                        }));
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Game::render() {
@@ -430,6 +538,12 @@ void Game::render() {
             setupText.setStyle(sf::Text::Bold);
             setupText.setPosition(window.getSize().x / 2.f - setupText.getLocalBounds().width / 2.f, 10.f);
             window.draw(setupText);
+
+            // FIX: Draw buildButtons for both steps
+            if (setupStep == 0 || setupStep == 1) {
+                for (const auto& btn : buildButtons)
+                    btn->draw(window);
+            }
         }
 
         std::string buildMsg;
@@ -515,6 +629,7 @@ void Game::setupPlayerButtons() {
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Wymiana", sf::Vector2f(30, 530), [&]() {
         auto& players = turnManager.getPlayers();
+        // Dodaj bank do wektora graczy na czas wymiany
         players.push_back(bank);
         int currentPlayer = turnManager.getCurrentPlayerIndex();
         trade.startTrade(font, players, currentPlayer, &logs);
