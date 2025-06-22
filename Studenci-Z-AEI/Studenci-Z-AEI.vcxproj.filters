@@ -66,10 +66,7 @@
     <ClCompile Include="SimpleButton.cpp">
       <Filter>Source Files\Source Mains</Filter>
     </ClCompile>
-    <ClCompile Include="Bank.cpp">
-      <Filter>Source Files\Source Mains</Filter>
-    </ClCompile>
-    <ClCompile Include="BuildPlace.cpp">
+    <ClCompile Include="Score.cpp">
       <Filter>Source Files\Source Mains</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,10 +128,7 @@
     <ClInclude Include="UIButton.h">
       <Filter>Header Files\Source Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Bank.h">
-      <Filter>Header Files\Source Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="BuildPlace.h">
+    <ClInclude Include="Score.h">
       <Filter>Header Files\Source Headers</Filter>
     </ClInclude>
   </ItemGroup>

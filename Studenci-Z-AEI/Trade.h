@@ -13,13 +13,13 @@
 
 struct TradeUI {
     bool exchangeMode = false;
-    int exchangeTargetPlayer = -1;
+    int exchangeTargetPlayer = -1; // Bank jako gracz ma ID -1
     std::map<ResourceType, int> exchangeGive;
     std::map<ResourceType, int> exchangeGet;
     std::vector<std::unique_ptr<UIButton>> exchangeButtons;
     std::vector<std::unique_ptr<UIButton>> exchangePlayerButtons;
     std::unique_ptr<UIButton> exchangeAcceptButton;
-	
+    std::vector<Player>* playersPtr = nullptr; 
     void startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer, Logs* logs);
     void handleClick(const sf::Vector2f& mousePos, std::vector<Player>& players, int currentPlayer);
     void draw(sf::RenderWindow& window);

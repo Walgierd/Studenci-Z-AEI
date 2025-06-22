@@ -136,10 +136,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Bank.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Buildable.cpp" />
-    <ClCompile Include="BuildPlace.cpp" />
     <ClCompile Include="Cards.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="HexTile.cpp" />
@@ -149,16 +147,15 @@
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PlayerUI.cpp" />
     <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="Score.cpp" />
     <ClCompile Include="SimpleButton.cpp" />
     <ClCompile Include="Studenci-Z-AEI.cpp" />
     <ClCompile Include="Trade.cpp" />
     <ClCompile Include="TurnManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Bank.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Buildable.h" />
-    <ClInclude Include="BuildPlace.h" />
     <ClInclude Include="Cards.h" />
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="Game.h" />
@@ -171,6 +168,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerUI.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Score.h" />
     <ClInclude Include="SimpleButton.h" />
     <ClInclude Include="Studenci-Z-AEI.h" />
     <ClInclude Include="Trade.h" />
