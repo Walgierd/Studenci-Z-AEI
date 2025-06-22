@@ -1,13 +1,14 @@
 ﻿#include "Menu.h"
 
+
 Menu::Menu(unsigned int width, unsigned int height) {
     this->width = width;
     this->height = height;
 
-    bgTexture.loadFromFile("Assets/Menu2.png");
+    if (std::filesystem::exists("Assets/Menu2.png")) bgTexture.loadFromFile("Assets/Menu2.png");
     background.setTexture(bgTexture);
 
-    font.loadFromFile("Fonts/pixel.ttf");
+    if (std::filesystem::exists("Fonts/pixel.ttf")) font.loadFromFile("Fonts/pixel.ttf");
 
     startButtonTexture.loadFromFile("Assets/Start.png");
     startButtonHoverTexture.loadFromFile("Assets/Start-on.png");

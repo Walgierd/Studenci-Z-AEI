@@ -1,5 +1,10 @@
 ﻿#include "Trade.h"
 #include "HexTile.h"
+#include <thread>
+#include <mutex>
+
+// Mutex do synchronizacji logów w Trade.cpp
+std::mutex tradeLogsMutex;
 
 void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer, Logs* logs) {
     playersPtr = &players; // zapamiętaj wskaźnik
@@ -75,16 +80,14 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                             if (v > 0) { getCount++; getType = t; }
                         }
 
-                        // --- PORTY: obsługa wymiany z bankiem z portami ---
                         int requiredGive = 4; // domyślnie 4:1
                         const Player& player = players[currentPlayer];
                         if (player.hasPort(PortType::Generic)) {
-                            requiredGive = 3; // 3:1 jeśli ma port uniwersalny
+                            requiredGive = 3;
                         }
                         if (player.hasPort(portTypeFromResource(giveType))) {
-                            requiredGive = 2; // 2:1 jeśli ma port surowca
+                            requiredGive = 2;
                         }
-                        // Jeśli ma oba porty (np. generic i surowca), wybierz lepszy (2:1)
                         if (giveCount != 1 || getCount != 1) {
                             canGet = false;
                             if (logs) errorMsg += "Wymiana z bankiem: musisz dać dokładnie " + std::to_string(requiredGive) + " jednego typu i wziąć 1 innego typu. ";
@@ -97,9 +100,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                             canGive = false;
                             if (logs) errorMsg += "Za mało surowca do wymiany z bankiem: " + resourceName(giveType) + ". ";
                         }
-                        // --- KONIEC PORTÓW ---
                     } else {
-                        // WALIDACJA DLA WYMIANY MIĘDZY GRACZAMI
                         for (auto& [t, v] : exchangeGive) {
                             if (players[currentPlayer].getResourceCount(t) < v) {
                                 canGive = false;
@@ -121,17 +122,20 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
 
                     if (canGive && canGet) {
                         if (players[exchangeTargetPlayer].getId() == -1) {
-                            // BANK LOGIC
                             for (auto& [t, v] : exchangeGive) {
                                 players[currentPlayer].removeResource(t, v);
                             }
                             for (auto& [t, v] : exchangeGet) {
                                 players[currentPlayer].addResource(t, v);
                             }
-                            if (logs) logs->add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) +
-                                " wymienia z Bankiem");
+                            if (logs) {
+                                std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " wymienia z Bankiem";
+                                std::thread([logs, logMsg]() {
+                                    std::lock_guard<std::mutex> lock(tradeLogsMutex);
+                                    logs->add(logMsg);
+                                }).detach();
+                            }
                         } else {
-                            // NORMAL PLAYER TRADE
                             for (auto& [t, v] : exchangeGive) {
                                 players[currentPlayer].removeResource(t, v);
                                 players[exchangeTargetPlayer].addResource(t, v);
@@ -140,11 +144,23 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                                 players[exchangeTargetPlayer].removeResource(t, v);
                                 players[currentPlayer].addResource(t, v);
                             }
-                            if (logs) logs->add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) +
-                                " wymienia z Graczem " + std::to_string(players[exchangeTargetPlayer].getId() + 1));
+                            if (logs) {
+                                std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) +
+                                    " wymienia z Graczem " + std::to_string(players[exchangeTargetPlayer].getId() + 1);
+                                std::thread([logs, logMsg]() {
+                                    std::lock_guard<std::mutex> lock(tradeLogsMutex);
+                                    logs->add(logMsg);
+                                }).detach();
+                            }
                         }
                     } else {
-                        if (logs && !errorMsg.empty()) logs->add(errorMsg);
+                        if (logs && !errorMsg.empty()) {
+                            std::string logMsg = errorMsg;
+                            std::thread([logs, logMsg]() {
+                                std::lock_guard<std::mutex> lock(tradeLogsMutex);
+                                logs->add(logMsg);
+                            }).detach();
+                        }
                     }
                     reset();
                 }

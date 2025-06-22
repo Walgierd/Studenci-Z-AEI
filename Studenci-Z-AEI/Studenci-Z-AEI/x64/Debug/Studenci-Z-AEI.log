@@ -1,4 +1,27 @@
-﻿  Buildable.cpp
+﻿  Board.cpp
+  Buildable.cpp
+  Cards.cpp
+  Game.cpp
+  HexTile.cpp
+  Knight.cpp
+  Menago.cpp
+  Menu.cpp
+  PlayerUI.cpp
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(40,23): warning C4244: 'initializing': conversion from 'T' to 'float', possible loss of data
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(40,23): warning C4244:         with
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(40,23): warning C4244:         [
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(40,23): warning C4244:             T=unsigned int
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(40,23): warning C4244:         ]
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(41,24): warning C4244: 'initializing': conversion from 'T' to 'float', possible loss of data
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(41,24): warning C4244:         with
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(41,24): warning C4244:         [
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(41,24): warning C4244:             T=unsigned int
+C:\Users\Piotr\source\repos\Studenci-Z-AEI\Studenci-Z-AEI\PlayerUI.cpp(41,24): warning C4244:         ]
+  Score.cpp
+  Studenci-Z-AEI.cpp
+  Trade.cpp
+  TurnManager.cpp
+  Generating Code...
   Studenci-Z-AEI.vcxproj -> C:\Users\Piotr\Source\Repos\Studenci-Z-AEI\Studenci-Z-AEI\x64\Debug\Studenci-Z-AEI.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

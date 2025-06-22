@@ -53,6 +53,7 @@ private:
     std::vector<std::unique_ptr<BuildSpotButton>> knightMoveButtons;
     bool freeBuildRoad;
     bool freeBuildSettlement;
+    std::mutex logsMutex;
 
     bool setupPhase;
     std::vector<sf::Vector2f> lastSettlementPos;

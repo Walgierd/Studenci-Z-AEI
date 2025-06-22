@@ -5,6 +5,7 @@
 #include <map>
 #include <algorithm>
 
+
 struct Vector2fPairLess {
     bool operator()(const std::pair<sf::Vector2f, sf::Vector2f>& lhs, const std::pair<sf::Vector2f, sf::Vector2f>& rhs) const {
         if (lhs.first.x != rhs.first.x) return lhs.first.x < rhs.first.x;
@@ -109,8 +110,14 @@ void HexTile::draw(sf::RenderWindow& window) const {
 
         static sf::Font font;
         static bool fontLoaded = false;
+        // Sprawdzenie istnienia pliku czcionki przed załadowaniem
         if (!fontLoaded) {
-            fontLoaded = font.loadFromFile("Fonts/arial.ttf");
+            if (std::filesystem::exists("Fonts/arial.ttf")) {
+                fontLoaded = font.loadFromFile("Fonts/arial.ttf");
+            } else {
+                // Możesz dodać obsługę błędu, np. nie rysować numeru lub użyć domyślnej czcionki
+                return;
+            }
         }
         std::string numberStr = std::to_string(number);
         sf::Text text;
@@ -131,8 +138,14 @@ void HexTile::draw(sf::RenderWindow& window) const {
 void HexTile::drawPorts(sf::RenderWindow& window) {
     static sf::Font font;
     static bool fontLoaded = false;
+    // Sprawdzenie istnienia pliku czcionki przed załadowaniem
     if (!fontLoaded) {
-        fontLoaded = font.loadFromFile("Fonts/pixel.ttf");
+        if (std::filesystem::exists("Fonts/pixel.ttf")) {
+            fontLoaded = font.loadFromFile("Fonts/pixel.ttf");
+        } else {
+            // Możesz dodać obsługę błędu, np. nie rysować podpisów portów
+            return;
+        }
     }
     for (const auto& port : ports) {
         // Rysuj L-kę: pozioma kreska, a do jej końca doklejona pionowa
