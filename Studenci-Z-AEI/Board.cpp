@@ -1,6 +1,10 @@
 ﻿#include "Board.h"
 #include <algorithm>
 #include <cmath>
+#include <vector>
+#include <SFML/Graphics.hpp>
+
+std::vector<sf::Vector2f> g_hexCenters;
 
 Board::Board(float hexSize, sf::Vector2f center) {
     generateTiles(hexSize, center);

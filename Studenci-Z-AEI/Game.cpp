@@ -31,6 +31,12 @@ Game::Game()
 
     // Dodaj bank do wektora graczy
     players.push_back(bank);
+
+    // --- DODAJ TO: inicjalizacja portów ---
+    std::vector<sf::Vector2f> hexCenters;
+    for (const auto& tile : board.getTiles())
+        hexCenters.push_back(tile.getPosition());
+    HexTile::setupPorts(hexCenters, hexSize);
 }
 
 void Game::run() {
@@ -333,6 +339,9 @@ void Game::render() {
     }
     else {
         board.draw(window);
+
+        // --- DODAJ TO: rysowanie portów ---
+        HexTile::drawPorts(window);
 
         {
             std::lock_guard<std::mutex> lock(buildMutex);
