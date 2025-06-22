@@ -249,7 +249,6 @@ void Game::handleGameEvents(const sf::Event& event) {
             }
         }
 
-        // --- Obsługa kliknięcia w kartę gracza ---
         if (cardManager.cardsVisible && !turnManager.getPlayers().empty()) {
             int currentPlayerId = turnManager.getCurrentPlayer().getId();
             auto& playerCardsMap = cardManager.getPlayerCards();
@@ -490,6 +489,10 @@ void Game::setupPlayerButtons() {
         for (auto& player : turnManager.getPlayers()) {
             player.setUsedCardThisTurn(false);
         }
+
+        // Reset BuildMode and clear markers
+        buildMode = BuildMode::None;
+        buildButtons.clear();
     }));
 
     cardManager.buyCardButton = std::make_unique<SimpleButton>(font, "Zakup karty", sf::Vector2f(30, 650), [&]() {
