@@ -12,6 +12,8 @@
 #include "Logs.h"
 #include "Menago.h"
 #include "TurnManager.h"
+#include <filesystem>
+#include <cmath>
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <mutex>
@@ -62,4 +64,5 @@ private:
     void update();
     void render();
     void setupPlayerButtons();
+    void handleBuildplaceClick(const sf::Vector2f& mousePos);
 };
