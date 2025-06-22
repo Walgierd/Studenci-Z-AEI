@@ -6,6 +6,7 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <filesystem>
+#include <future>
 
 enum class PortType {
     Generic,    // 3:1

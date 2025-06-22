@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <numeric>
+#include <ranges>
 
 
 struct Vector2fPairLess {
@@ -17,12 +19,11 @@ struct Vector2fPairLess {
 
 std::vector<Port> HexTile::ports;
 
-// Pomocnicza funkcja: znajdź zewnętrzne wierzchołki planszy
+// Użycie ranges w getOuterVertices
 static std::vector<sf::Vector2f> getOuterVertices(const std::vector<sf::Vector2f>& hexCenters, float hexSize, float epsilon = 1.0f) {
     auto vertices = getUniqueHexVertices(hexCenters, hexSize, epsilon);
     auto edges = getUniqueHexEdges(hexCenters, hexSize, epsilon);
 
-    // Zlicz ile krawędzi przylega do każdego wierzchołka
     std::vector<int> edgeCount(vertices.size(), 0);
     for (const auto& edge : edges) {
         for (size_t i = 0; i < vertices.size(); ++i) {
@@ -33,7 +34,7 @@ static std::vector<sf::Vector2f> getOuterVertices(const std::vector<sf::Vector2f
         }
     }
 
-    // Zbierz tylko te wierzchołki, które mają 2 krawędzie (zewnętrzne)
+    // Filtrowanie z użyciem std::views::filter i std::views::enumerate (C++23) lub ręcznie
     std::vector<sf::Vector2f> outerVertices;
     for (size_t i = 0; i < vertices.size(); ++i) {
         if (edgeCount[i] == 2)
@@ -49,7 +50,7 @@ HexTile::HexTile(float x, float y, float size, ResourceType resource, int number
     hexShape.setPosition(position);
     switch (resourceType) {
     case ResourceType::Kawa:    hexShape.setFillColor(sf::Color(139, 69, 19)); break;
-    case ResourceType::Piwo:    hexShape.setFillColor(sf::Color(255, 215, 0)); break; // złoty kolor piwa
+    case ResourceType::Piwo:    hexShape.setFillColor(sf::Color(255, 215, 0)); break; // piwopiwopiwo
     case ResourceType::Notatki: hexShape.setFillColor(sf::Color::White); break;
     case ResourceType::Pizza:   hexShape.setFillColor(sf::Color(255, 99, 71)); break;
     case ResourceType::Kabel:   hexShape.setFillColor(sf::Color(128, 128, 128)); break;
@@ -67,31 +68,37 @@ void HexTile::setupHexShape(float size) {
 
 void HexTile::setupPorts(const std::vector<sf::Vector2f>& hexCenters, float hexSize) {
     ports.clear();
-    auto outerVertices = getOuterVertices(hexCenters, hexSize);
 
-    // Rozmieść porty równomiernie na zewnętrznych wierzchołkach
+    auto futureOuterVertices = std::async(std::launch::async, [&]() {
+        return getOuterVertices(hexCenters, hexSize);
+    });
+
+    auto outerVertices = futureOuterVertices.get();
+
     const int portCount = 9;
     std::vector<PortType> portTypes = {
         PortType::Kawa, PortType::Generic, PortType::Piwo, PortType::Generic, PortType::Notatki,
         PortType::Generic, PortType::Pizza, PortType::Generic, PortType::Kabel
     };
 
-    // Sortuj wierzchołki po kącie względem środka planszy
-    sf::Vector2f center(0, 0);
-    for (const auto& c : hexCenters) center += c;
+    // Wyznacz środek planszy z użyciem ranges
+    sf::Vector2f center = std::accumulate(
+        hexCenters.begin(), hexCenters.end(), sf::Vector2f(0, 0),
+        [](const sf::Vector2f& acc, const sf::Vector2f& c) { return acc + c; }
+    );
     center.x /= hexCenters.size();
     center.y /= hexCenters.size();
 
-    std::sort(outerVertices.begin(), outerVertices.end(), [center](const sf::Vector2f& v1, const sf::Vector2f& v2) {
+    // Sortowanie z użyciem std::ranges::sort
+    std::ranges::sort(outerVertices, [center](const sf::Vector2f& v1, const sf::Vector2f& v2) {
         float a1 = std::atan2(v1.y - center.y, v1.x - center.x);
         float a2 = std::atan2(v2.y - center.y, v2.x - center.x);
         return a1 < a2;
     });
 
-    for (int i = 0; i < portCount && i < (int)outerVertices.size(); ++i) {
+    for (int i = 0; i < portCount && i < static_cast<int>(outerVertices.size()); ++i) {
         int idx = static_cast<int>(i * outerVertices.size() / float(portCount));
         sf::Vector2f v = outerVertices[idx];
-        // Port na wierzchołku (start i end takie same)
         ports.emplace_back(v, v, portTypes[i]);
     }
 }

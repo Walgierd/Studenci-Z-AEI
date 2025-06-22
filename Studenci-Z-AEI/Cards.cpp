@@ -4,7 +4,8 @@
 #include "Menu.h"
 #include "Buildable.h"
 #include "Logs.h"
-
+#include <future>
+#include <ranges>
 bool freeBuildRoad = false;
 bool freeBuildSettlement = false;
 bool freeKnightMove = false;
@@ -19,27 +20,34 @@ std::string CardManager::buyCardWithMessage(Player& player) {
     player.removeResource(ResourceType::Piwo, 1);
     player.removeResource(ResourceType::Notatki, 1);
 
-    std::vector<CardType> types = { CardType::FreeRoad, CardType::FreeSettlement, CardType::MoveRobber, CardType::VictoryPoint };
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist(0, static_cast<int>(types.size()) - 1);
-    CardType drawn = types[dist(gen)];
+    // Asynchroniczne losowanie i tworzenie karty
+    auto futureCard = std::async(std::launch::async, []() -> std::unique_ptr<Card> {
+        std::vector<CardType> types = { CardType::FreeRoad, CardType::FreeSettlement, CardType::MoveRobber, CardType::VictoryPoint };
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dist(0, static_cast<int>(types.size()) - 1);
+        CardType drawn = types[dist(gen)];
 
-    std::unique_ptr<Card> card;
-    switch (static_cast<int>(drawn)) {
-    case static_cast<int>(CardType::FreeRoad): 
-        card = std::make_unique<FreeRoadCard>(); 
-        break;
-    case static_cast<int>(CardType::FreeSettlement): 
-        card = std::make_unique<FreeSettlementCard>(); 
-        break;
-    case static_cast<int>(CardType::MoveRobber): 
-        card = std::make_unique<MoveRobberCard>(); 
-        break;
-    case static_cast<int>(CardType::VictoryPoint): 
-        card = std::make_unique<VictoryPointCard>(); 
-        break;
-    }
+        switch (static_cast<int>(drawn)) {
+        case static_cast<int>(CardType::FreeRoad):
+            return std::make_unique<FreeRoadCard>();
+        case static_cast<int>(CardType::FreeSettlement):
+            return std::make_unique<FreeSettlementCard>();
+        case static_cast<int>(CardType::MoveRobber):
+            return std::make_unique<MoveRobberCard>();
+        case static_cast<int>(CardType::VictoryPoint):
+            return std::make_unique<VictoryPointCard>();
+        default:
+            return nullptr;
+        }
+    });
+
+    // Możesz wykonywać inne operacje tutaj, jeśli są niezależne...
+
+    // Pobierz wynik (blokuje tylko do momentu uzyskania wyniku)
+    std::unique_ptr<Card> card = futureCard.get();
+    if (!card) return "";
+
     std::string cardName = card->getName();
     playerCards[player.getId()].push_back(std::move(card));
     return cardName;
@@ -50,11 +58,12 @@ void CardManager::showCards(sf::RenderWindow& window, const sf::Font& font, Play
     const auto& cards = playerCards[player.getId()];
     float y = 200.f;
     int visibleIdx = 1;
-    for (size_t i = 0; i < cards.size(); ++i) {
-        if (cards[i]->type == CardType::VictoryPoint) continue; 
+
+    // Użycie ranges do filtrowania kart (pomijamy VictoryPoint)
+    for (const auto& card : cards | std::views::filter([](const auto& c) { return c->type != CardType::VictoryPoint; })) {
         sf::Text text;
         text.setFont(font);
-        text.setString(std::to_string(visibleIdx++) + ". " + cards[i]->getName());
+        text.setString(std::to_string(visibleIdx++) + ". " + card->getName());
         text.setCharacterSize(28);
         text.setFillColor(sf::Color::Yellow);
         text.setPosition(400.f, y);

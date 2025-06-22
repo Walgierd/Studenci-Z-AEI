@@ -363,6 +363,18 @@ void Game::handleGameEvents(const sf::Event& event) {
                             knightMoveMode,
                             knightMoveButtons
                         );
+
+                        if (freeBuildRoad) {
+                            buildMode = BuildMode::Road;
+                            buildButtons.clear();
+                            initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, turnManager.getPlayers(), turnManager.getCurrentPlayerIndex(), window);
+                        }
+                        if (freeBuildSettlement) {
+                            buildMode = BuildMode::Settlement;
+                            buildButtons.clear();
+                            initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, turnManager.getPlayers(), turnManager.getCurrentPlayerIndex(), window);
+                        }
+
                         turnManager.getCurrentPlayer().setUsedCardThisTurn(true);
                         std::string logMsg = "Gracz " + std::to_string(turnManager.getCurrentPlayer().getId() + 1) + " użył karty.";
                         std::thread([this, logMsg]() {
