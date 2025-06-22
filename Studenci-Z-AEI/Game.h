@@ -12,6 +12,9 @@
 #include "Logs.h"
 #include "Menago.h"
 #include "TurnManager.h"
+#include "Score.h"  
+#include <filesystem>
+#include <cmath>
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <mutex>
@@ -22,7 +25,7 @@ public:
     Game();
     void run();
     CardManager cardManager;
-
+	Score score; 
 private:
     sf::RenderWindow window;
     unsigned int currentStyle;
@@ -36,6 +39,7 @@ private:
     Board board;
     TurnManager turnManager;
     std::vector<Player> players;
+    Player bank; 
     int currentPlayer;
     int turnCounter;
     std::vector<std::unique_ptr<Buildable>> buildables;
@@ -50,12 +54,12 @@ private:
     bool freeBuildRoad;
     bool freeBuildSettlement;
 
-    bool setupPhase; 
-    std::vector<sf::Vector2f> lastSettlementPos; 
+    bool setupPhase;
+    std::vector<sf::Vector2f> lastSettlementPos;
 
-    int setupTurn; 
-    int setupStep; 
-    int setupPlayerIndex; 
+    int setupTurn;
+    int setupStep;
+    int setupPlayerIndex;
     void handleEvents();
     void handleMenuEvents(const sf::Event& event);
     void handleGameEvents(const sf::Event& event);
@@ -63,3 +67,4 @@ private:
     void render();
     void setupPlayerButtons();
 };
+

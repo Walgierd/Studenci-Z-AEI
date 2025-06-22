@@ -104,15 +104,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\SFML-2.5.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\trela\Desktop\Projekt PK\Walgierd\Studenci-Z-AEI\SFML-2.5.1\include\;C:\Users\trela\Desktop\Projekt PK\Walgierd\Studenci-Z-AEI\SFML-2.5.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\SFML-2.5.1\lib%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib
-
+      <AdditionalLibraryDirectories>C:\Users\trela\Desktop\Projekt PK\Walgierd\Studenci-Z-AEI\SFML-2.5.1\lib;C:\Users\trela\Desktop\Projekt PK\Walgierd\Studenci-Z-AEI\SFML-2.5.1\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;
 ;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -125,14 +124,14 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\SFML-2.5.1\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\trela\Desktop\Projekt PK\Walgierd\Studenci-Z-AEI\SFML-2.5.1\include;C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\SFML-2.5.1\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\SFML-2.5.1\lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\trela\Desktop\Projekt PK\Walgierd\Studenci-Z-AEI\SFML-2.5.1\lib;C:\Users\trela\Desktop\Projekt PK 4\Studenci-Z-AEI\SFML-2.5.1\lib;</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -148,6 +147,7 @@
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="PlayerUI.cpp" />
     <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="Score.cpp" />
     <ClCompile Include="SimpleButton.cpp" />
     <ClCompile Include="Studenci-Z-AEI.cpp" />
     <ClCompile Include="Trade.cpp" />
@@ -168,6 +168,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerUI.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Score.h" />
     <ClInclude Include="SimpleButton.h" />
     <ClInclude Include="Studenci-Z-AEI.h" />
     <ClInclude Include="Trade.h" />

@@ -24,3 +24,14 @@ public:
 
 std::string resourceName(ResourceType type);
 
+namespace std {
+    template <>
+    struct hash<sf::Vector2f> {
+        std::size_t operator()(const sf::Vector2f& v) const noexcept {
+            std::size_t h1 = std::hash<float>{}(v.x);
+            std::size_t h2 = std::hash<float>{}(v.y);
+            return h1 ^ (h2 << 1); 
+        }
+    };
+}
+

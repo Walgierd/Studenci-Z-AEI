@@ -1,35 +1,36 @@
 ﻿#include "Game.h"
-#include "Menago.h"
-#include <filesystem>
-#include <cmath>
+
 
 Game::Game()
     : window(sf::VideoMode(1920, 1080), "Studenci z AEI", sf::Style::Default),
-      currentStyle(sf::Style::Default),
-      menu(1920, 1080),
-      playerUI(font), 
-      inMenu(true),
-      hexSize(80.f),
-      board(hexSize, sf::Vector2f(1920.f / 2.f, 1080.f / 2.f)),
-      buildMode(BuildMode::None),
-      knight(),
-      knightMoveMode(false),
-      freeBuildRoad(false),
-      freeBuildSettlement(false),
-      setupPhase(true),
-      setupTurn(0),
-      setupStep(0),
-      setupPlayerIndex(0),
-      logs(font)
-      
-	
+    currentStyle(sf::Style::Default),
+    menu(1920, 1080),
+    score(), // (or wherever your Score object is)
+    playerUI(font, &score),
+    inMenu(true),
+    hexSize(80.f),
+    board(hexSize, sf::Vector2f(1920.f / 2.f, 1080.f / 2.f)),
+    buildMode(BuildMode::None),
+    knight(),
+    knightMoveMode(false),
+    freeBuildRoad(false),
+    freeBuildSettlement(false),
+    setupPhase(true),
+    setupTurn(0),
+    setupStep(0),
+    setupPlayerIndex(0),
+    logs(font),
+    bank(-1)
 {
     if (!std::filesystem::exists("Fonts/arial.ttf") || !font.loadFromFile("Fonts/arial.ttf")) {
         throw std::runtime_error("Brak czcionki Fonts/arial.ttf");
     }
     knight.setPosition(static_cast<int>(board.getTiles().size() / 2));
     setupPlayerButtons();
-    lastSettlementPos.resize(4, sf::Vector2f(-1000, -1000)); 
+    lastSettlementPos.resize(4, sf::Vector2f(-1000, -1000));
+
+    // Dodaj bank do wektora graczy
+    players.push_back(bank);
 }
 
 void Game::run() {
@@ -49,14 +50,14 @@ void Game::run() {
 
 void Game::handleEvents() {
     sf::Event event;
-    while (window.pollEvent(event)) {       
+    while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed)
             window.close();
 
         if (inMenu)
             handleMenuEvents(event);
         else
-            handleGameEvents(event); 
+            handleGameEvents(event);
     }
 }
 
@@ -85,84 +86,23 @@ void Game::handleGameEvents(const sf::Event& event) {
     if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
         sf::Vector2f mousePos = window.mapPixelToCoords({ event.mouseButton.x, event.mouseButton.y });
 
-        if (setupPhase) {
-            auto& players = turnManager.getPlayers();
-            int currentPlayer = setupPlayerIndex;
-
-            if (setupStep == 0) {
-                std::vector<sf::Vector2f> hexCenters;
-                for (const auto& tile : board.getTiles())
-                    hexCenters.push_back(tile.getPosition());
-                auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
-                for (const auto& pos : settlementSpots) {
-                    if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
-                        bool freeBuildSettlementTemp = true;
-                        if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
-                            lastSettlementPos[currentPlayer] = pos;
-                            setupStep = 1;
-                        }
-                        break;
-                    }
-                }
-            } else if (setupStep == 1) {
-                std::vector<sf::Vector2f> hexCenters;
-                for (const auto& tile : board.getTiles())
-                    hexCenters.push_back(tile.getPosition());
-                auto roadSpots = getUniqueHexEdges(hexCenters, hexSize);
-                for (const auto& edge : roadSpots) {
-                    sf::Vector2f mid = (edge.first + edge.second) / 2.f;
-                    if ((std::hypot(lastSettlementPos[currentPlayer].x - edge.first.x, lastSettlementPos[currentPlayer].y - edge.first.y) < 1.f ||
-                         std::hypot(lastSettlementPos[currentPlayer].x - edge.second.x, lastSettlementPos[currentPlayer].y - edge.second.y) < 1.f) &&
-                        std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
-                        bool freeBuildRoadTemp = true;
-                        if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoadTemp, true, lastSettlementPos[currentPlayer], &logs)) {
-                            setupPlayerIndex++;
-                            if (setupPlayerIndex >= static_cast<int>(players.size())) {
-                                setupPlayerIndex = 0;
-                                setupTurn++;
-                                if (setupTurn >= 2) {
-                                    setupPhase = false;
-                                }
-                            }
-                            setupStep = 0;
-                        }
-                        break;
-                    }
-                }
-            }
-            return;
-        }
-
         auto& players = turnManager.getPlayers();
         int currentPlayer = turnManager.getCurrentPlayerIndex();
 
-        // Wymuś rzut kostką przed innymi akcjami (poza rzutem)
+        // Dice button definition
         sf::RectangleShape diceButton(sf::Vector2f(120, 50));
         diceButton.setPosition(static_cast<float>(window.getSize().x) - 180.f, 300.f);
         bool diceClicked = diceButton.getGlobalBounds().contains(mousePos);
 
-        if (!players[currentPlayer].hasRolled() && !diceClicked) {
-            logs.add("Najpierw rzuć kostką!");
-            return;
-        }
-
-        if (trade.exchangeMode) {   
-            trade.handleClick(mousePos, players, currentPlayer);
-            return;
-        }
-        if (knightMoveMode) {
-            knight.handleMoveClick(mousePos, knightMoveButtons, knightMoveMode);
-            return;
-        }
-        for (auto& btn : playerButtons) {
-            if (btn->isClicked(mousePos)) btn->onClick();
-        }
-        if (cardManager.buyCardButton->isClicked(mousePos)) cardManager.buyCardButton->onClick();
-        if (cardManager.showCardsButton->isClicked(mousePos)) cardManager.showCardsButton->onClick();
-
+        // Block further dice rolls if already rolled
         if (diceClicked) {
+            if (players[currentPlayer].hasRolled()) {
+                logs.add("Już rzuciłeś kostką w tej turze!");
+                return; // Prevent further actions
+            }
+
             auto received = handleDiceRollWithLog(players, currentPlayer, board, buildables, knight, hexSize);
-            if (!players[currentPlayer].hasRolled()) return; 
+            if (!players[currentPlayer].hasRolled()) return;
 
             int d1 = players[currentPlayer].getDice1();
             int d2 = players[currentPlayer].getDice2();
@@ -202,8 +142,77 @@ void Game::handleGameEvents(const sf::Event& event) {
                     ));
                 }
             }
-            return; // Po rzucie nie wykonuj innych akcji w tej iteracji kliknięcia
+            return; // Prevent other actions after dice roll
         }
+
+        if (setupPhase) {
+            auto& players = turnManager.getPlayers();
+            int currentPlayer = setupPlayerIndex;
+
+            if (setupStep == 0) {
+                std::vector<sf::Vector2f> hexCenters;
+                for (const auto& tile : board.getTiles())
+                    hexCenters.push_back(tile.getPosition());
+                auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
+                for (const auto& pos : settlementSpots) {
+                    if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
+                        bool freeBuildSettlementTemp = true;
+                        if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
+                            lastSettlementPos[currentPlayer] = pos;
+                            setupStep = 1;
+                        }
+                        break;
+                    }
+                }
+            }
+            else if (setupStep == 1) {
+                std::vector<sf::Vector2f> hexCenters;
+                for (const auto& tile : board.getTiles())
+                    hexCenters.push_back(tile.getPosition());
+                auto roadSpots = getUniqueHexEdges(hexCenters, hexSize);
+                for (const auto& edge : roadSpots) {
+                    sf::Vector2f mid = (edge.first + edge.second) / 2.f;
+                    if ((std::hypot(lastSettlementPos[currentPlayer].x - edge.first.x, lastSettlementPos[currentPlayer].y - edge.first.y) < 1.f ||
+                        std::hypot(lastSettlementPos[currentPlayer].x - edge.second.x, lastSettlementPos[currentPlayer].y - edge.second.y) < 1.f) &&
+                        std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
+                        bool freeBuildRoadTemp = true;
+                        if (tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoadTemp, true, lastSettlementPos[currentPlayer], &logs)) {
+                            setupPlayerIndex++;
+                            if (setupPlayerIndex >= static_cast<int>(players.size())) {
+                                setupPlayerIndex = 0;
+                                setupTurn++;
+                                if (setupTurn >= 2) {
+                                    setupPhase = false;
+                                }
+                            }
+                            setupStep = 0;
+                        }
+                        break;
+                    }
+                }
+            }
+            return;
+        }
+
+        // Wymuś rzut kostką przed innymi akcjami (poza rzutem)
+        if (!players[currentPlayer].hasRolled()) {
+            logs.add("Najpierw rzuć kostką!");
+            return;
+        }
+
+        if (trade.exchangeMode) {
+            trade.handleClick(mousePos, players, currentPlayer);
+            return;
+        }
+        if (knightMoveMode) {
+            knight.handleMoveClick(mousePos, knightMoveButtons, knightMoveMode);
+            return;
+        }
+        for (auto& btn : playerButtons) {
+            if (btn->isClicked(mousePos)) btn->onClick();
+        }
+        if (cardManager.buyCardButton->isClicked(mousePos)) cardManager.buyCardButton->onClick();
+        if (cardManager.showCardsButton->isClicked(mousePos)) cardManager.showCardsButton->onClick();
 
         if (buildMode == BuildMode::Settlement) {
             std::vector<sf::Vector2f> hexCenters;
@@ -219,7 +228,8 @@ void Game::handleGameEvents(const sf::Event& event) {
                     break;
                 }
             }
-        } else if (buildMode == BuildMode::Road) {
+        }
+        else if (buildMode == BuildMode::Road) {
             std::vector<sf::Vector2f> hexCenters;
             for (const auto& tile : board.getTiles())
                 hexCenters.push_back(tile.getPosition());
@@ -231,18 +241,25 @@ void Game::handleGameEvents(const sf::Event& event) {
                     if (valid || (freeBuildRoad && isRoadConnected(buildables, edge.first, edge.second, players[currentPlayer].getId()))) {
                         logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje korytarz");
                         buildMode = BuildMode::None;
+
+                        // DODAJ TO:
+                        std::vector<int> victoryPoints;
+                        for (const auto& player : players) {
+                            victoryPoints.push_back(cardManager.getVictoryPointCardCount(player.getId()));
+                        }
+                        score.updateScores(players, buildables, victoryPoints);
                     }
                     break;
                 }
             }
-        } else if (buildMode == BuildMode::City) {
+        }
+        else if (buildMode == BuildMode::City) {
             if (tryBuildCity(buildables, players, currentPlayer, mousePos)) {
                 logs.add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje kampus");
                 buildMode = BuildMode::None;
             }
         }
 
-        // --- Obsługa kliknięcia w kartę gracza ---
         if (cardManager.cardsVisible && !turnManager.getPlayers().empty()) {
             int currentPlayerId = turnManager.getCurrentPlayer().getId();
             auto& playerCardsMap = cardManager.getPlayerCards();
@@ -292,6 +309,18 @@ void Game::update() {
         menu.handleFullscreenToggle(window, currentStyle);
         menu.resetFullscreenToggleRequest();
     }
+
+    std::vector<int> victoryPoints;
+    const auto& players = turnManager.getPlayers();
+    for (const auto& player : players) {
+        victoryPoints.push_back(cardManager.getVictoryPointCardCount(player.getId()));
+    }
+    score.updateScores(players, buildables, victoryPoints);
+
+    std::vector<Player> scoringPlayers;
+    for (const auto& p : turnManager.getPlayers()) {
+        if (p.getId() >= 0) scoringPlayers.push_back(p);
+    }
 }
 
 void Game::render() {
@@ -301,7 +330,8 @@ void Game::render() {
         sf::Vector2f mousePos = window.mapPixelToCoords(mousePixel);
         menu.update(mousePos);
         menu.draw(window);
-    } else {
+    }
+    else {
         board.draw(window);
 
         {
@@ -376,6 +406,7 @@ void Game::render() {
         trade.draw(window);
 
         if (setupPhase) {
+            players.push_back(bank);
             sf::Text setupText;
             setupText.setFont(font);
             std::string msg;
@@ -395,11 +426,14 @@ void Game::render() {
         std::string buildMsg;
         if (playerButtons.size() > 0 && playerButtons[0]->isClicked(mousePos)) {
             buildMsg = "Budowanie korytarza: 1x Kawa, 1x Kabel";
-        } else if (playerButtons.size() > 1 && playerButtons[1]->isClicked(mousePos)) {
+        }
+        else if (playerButtons.size() > 1 && playerButtons[1]->isClicked(mousePos)) {
             buildMsg = "Budowanie akademika: 1x Pizza, 1x Piwo, 1x Notatki";
-        } else if (playerButtons.size() > 2 && playerButtons[2]->isClicked(mousePos)) {
+        }
+        else if (playerButtons.size() > 2 && playerButtons[2]->isClicked(mousePos)) {
             buildMsg = "Budowanie kampusu: 2x Kawa, 2x Piwo, 2x Pizza";
-        } else if (cardManager.buyCardButton && cardManager.buyCardButton->isClicked(mousePos)) {
+        }
+        else if (cardManager.buyCardButton && cardManager.buyCardButton->isClicked(mousePos)) {
             buildMsg = "Zakup karty: 1x Kabel, 1x Piwo, 1x Notatki";
         }
 
@@ -425,9 +459,11 @@ void Game::render() {
                 float cardPanelY = 400.f;
                 float cardWidth = 400.f;
                 float cardHeight = 40.f;
+                int visibleIdx = 0;
                 for (size_t i = 0; i < cards.size(); ++i) {
+                    if (cards[i]->type == CardType::VictoryPoint) continue; // NIE pokazuj kart punktów zwycięstwa
                     sf::RectangleShape cardRect(sf::Vector2f(cardWidth, cardHeight));
-                    cardRect.setPosition(cardPanelX, cardPanelY + i * (cardHeight + 10.f));
+                    cardRect.setPosition(cardPanelX, cardPanelY + visibleIdx * (cardHeight + 10.f));
                     cardRect.setFillColor(sf::Color(60, 60, 120, 200));
                     cardRect.setOutlineColor(sf::Color::White);
                     cardRect.setOutlineThickness(2.f);
@@ -438,8 +474,10 @@ void Game::render() {
                     cardText.setString(cards[i]->getName());
                     cardText.setCharacterSize(24);
                     cardText.setFillColor(sf::Color::White);
-                    cardText.setPosition(cardPanelX + 10.f, cardPanelY + i * (cardHeight + 10.f) + 5.f);
+                    cardText.setPosition(cardPanelX + 10.f, cardPanelY + visibleIdx * (cardHeight + 10.f) + 5.f);
                     window.draw(cardText);
+
+                    ++visibleIdx;
                 }
             }
         }
@@ -468,10 +506,9 @@ void Game::setupPlayerButtons() {
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Wymiana", sf::Vector2f(30, 530), [&]() {
         auto& players = turnManager.getPlayers();
+        players.push_back(bank);
         int currentPlayer = turnManager.getCurrentPlayerIndex();
-        if (players.size() > 1) {
-            trade.startTrade(font, players, currentPlayer, &logs);
-        }
+        trade.startTrade(font, players, currentPlayer, &logs);
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Kolejna tura", sf::Vector2f(30, 590), [&]() {
         if (!turnManager.getPlayers().empty() && !turnManager.getCurrentPlayer().hasRolled()) {
@@ -483,6 +520,10 @@ void Game::setupPlayerButtons() {
         for (auto& player : turnManager.getPlayers()) {
             player.setUsedCardThisTurn(false);
         }
+
+        // Reset BuildMode and clear markers
+        buildMode = BuildMode::None;
+        buildButtons.clear();
     }));
 
     cardManager.buyCardButton = std::make_unique<SimpleButton>(font, "Zakup karty", sf::Vector2f(30, 650), [&]() {

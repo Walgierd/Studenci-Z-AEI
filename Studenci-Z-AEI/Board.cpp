@@ -41,7 +41,7 @@ std::vector<ResourceType> Board::shuffledResources() {
         ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
         ResourceType::Piwo, ResourceType::Piwo, ResourceType::Piwo, ResourceType::Piwo,
         ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki,
-        ResourceType::Pizza, ResourceType::Pizza, ResourceType::Pizza, ResourceType::Pizza,
+        ResourceType::Pizza, ResourceType::Pizza, ResourceType::Pizza, ResourceType::Kabel,
         ResourceType::Kabel, ResourceType::Kabel
     };
     std::random_device rd;

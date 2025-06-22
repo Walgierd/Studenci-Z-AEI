@@ -117,6 +117,8 @@ public:
         std::vector<std::unique_ptr<BuildSpotButton>>& knightMoveButtons
     );
 
+    int getVictoryPointCardCount(int playerId) const;
+
     const std::map<int, std::vector<std::unique_ptr<Card>>>& getPlayerCards() const {
         return playerCards;
     }
