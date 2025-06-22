@@ -28,3 +28,5 @@ struct TradeUI {
 public:
     Logs* logs = nullptr;
 };
+
+PortType portTypeFromResource(ResourceType res);

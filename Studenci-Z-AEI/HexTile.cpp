@@ -16,35 +16,6 @@ struct Vector2fPairLess {
 
 std::vector<Port> HexTile::ports;
 
-// Pomocnicza funkcja: zwraca zewnętrzne krawędzie planszy
-std::vector<std::pair<sf::Vector2f, sf::Vector2f>> getOuterEdges(const std::vector<sf::Vector2f>& hexCenters, float hexSize) {
-    std::map<std::pair<sf::Vector2f, sf::Vector2f>, int, Vector2fPairLess> edgeCount;
-    float epsilon = 1.0f;
-    auto cmp = [epsilon](const sf::Vector2f& a, const sf::Vector2f& b) {
-        return std::hypot(a.x - b.x, a.y - b.y) < epsilon;
-    };
-
-    for (const auto& center : hexCenters) {
-        std::vector<sf::Vector2f> verts;
-        for (int i = 0; i < 6; ++i) {
-            float angle = 3.14159265f / 3.f * i - 3.14159265f / 6.f;
-            verts.emplace_back(center.x + hexSize * std::cos(angle), center.y + hexSize * std::sin(angle));
-        }
-        for (int i = 0; i < 6; ++i) {
-            sf::Vector2f a = verts[i];
-            sf::Vector2f b = verts[(i + 1) % 6];
-            // Ustal porządek, żeby (a,b) == (b,a)
-            if (a.x > b.x || (a.x == b.x && a.y > b.y)) std::swap(a, b);
-            edgeCount[{a, b}]++;
-        }
-    }
-    std::vector<std::pair<sf::Vector2f, sf::Vector2f>> outerEdges;
-    for (const auto& [edge, count] : edgeCount) {
-        if (count == 1) outerEdges.push_back(edge);
-    }
-    return outerEdges;
-}
-
 // Pomocnicza funkcja: znajdź zewnętrzne wierzchołki planszy
 static std::vector<sf::Vector2f> getOuterVertices(const std::vector<sf::Vector2f>& hexCenters, float hexSize, float epsilon = 1.0f) {
     auto vertices = getUniqueHexVertices(hexCenters, hexSize, epsilon);
@@ -161,31 +132,43 @@ void HexTile::drawPorts(sf::RenderWindow& window) {
     static sf::Font font;
     static bool fontLoaded = false;
     if (!fontLoaded) {
-        fontLoaded = font.loadFromFile("Fonts/arial.ttf");
+        fontLoaded = font.loadFromFile("Fonts/pixel.ttf");
     }
     for (const auto& port : ports) {
-        // Rysuj L-kę na środku krawędzi
-        sf::RectangleShape rect1(sf::Vector2f(40, 12));
-        sf::RectangleShape rect2(sf::Vector2f(12, 40));
-        rect1.setFillColor(sf::Color(80, 80, 80));
-        rect2.setFillColor(sf::Color(80, 80, 80));
-        rect1.setOrigin(20, 6);
-        rect2.setOrigin(6, 20);
-        rect1.setPosition(port.pos);
-        rect2.setPosition(port.pos);
-        rect1.setRotation(port.angle);
-        rect2.setRotation(port.angle);
-        window.draw(rect1);
-        window.draw(rect2);
+        // Rysuj L-kę: pozioma kreska, a do jej końca doklejona pionowa
+        float mainLen = 40.f, mainThick = 12.f;
+        float legLen = 28.f, legThick = 12.f;
 
-        // Podpis portu
+        // Pozioma kreska (podstawowa)
+        sf::RectangleShape base(sf::Vector2f(mainLen, mainThick));
+        base.setFillColor(sf::Color(80, 80, 80));
+        base.setOrigin(mainLen / 2.f, mainThick / 2.f);
+        base.setPosition(port.pos);
+        base.setRotation(port.angle);
+
+        // Pionowa kreska (noga L)
+        sf::RectangleShape leg(sf::Vector2f(legThick, legLen));
+        leg.setFillColor(sf::Color(80, 80, 80));
+        // Ustaw nogę na końcu prawej strony poziomej kreski
+        float rad = port.angle * 3.14159265f / 180.f;
+        float dx = std::cos(rad) * (mainLen / 2.f - legThick / 2.f);
+        float dy = std::sin(rad) * (mainLen / 2.f - legThick / 2.f);
+        leg.setOrigin(legThick / 2.f, 0.f);
+        leg.setPosition(port.pos.x + dx, port.pos.y + dy);
+        leg.setRotation(port.angle + 90.f);
+
+        window.draw(base);
+        window.draw(leg);
+
+        // Podpis portu - ciemny pomarańcz
         sf::Text text;
         text.setFont(font);
         text.setString(port.label);
         text.setCharacterSize(18);
-        text.setFillColor(sf::Color::White);
+        text.setFillColor(sf::Color(204, 85, 0)); // Ciemny pomarańcz
         text.setStyle(sf::Text::Bold);
-        text.setOrigin(text.getLocalBounds().width / 2.f, text.getLocalBounds().height / 2.f);
+        sf::FloatRect bounds = text.getLocalBounds();
+        text.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
         text.setPosition(port.pos.x, port.pos.y - 30);
         window.draw(text);
     }

@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include <map>
 #include <random>
+#include <set>
 #include "Resource.h"
+#include "HexTile.h"
 
 class Player {
 public:
@@ -40,10 +42,16 @@ public:
     void setUsedCardThisTurn(bool used) { usedCardThisTurn = used; }
     bool hasUsedCardThisTurn() const { return usedCardThisTurn; }
 
+    void addPort(PortType type) { ownedPorts.insert(type); }
+    bool hasPort(PortType type) const { return ownedPorts.count(type) > 0; }
+    bool hasAnyGenericPort() const { return ownedPorts.count(PortType::Generic) > 0; }
+    const std::set<PortType>& getPorts() const { return ownedPorts; }
+
 private:
     int id;
     std::map<ResourceType, int> resources;
     bool hasRolledThisTurn;
     int dice1, dice2;
     bool usedCardThisTurn = false;
+    std::set<PortType> ownedPorts;
 };

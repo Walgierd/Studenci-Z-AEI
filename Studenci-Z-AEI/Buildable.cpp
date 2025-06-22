@@ -288,6 +288,15 @@ bool tryBuildSettlement(
         auto settlement = std::make_unique<Settlement>();
         settlement->ownerId = players[currentPlayer].getId();
         settlement->pos = pos;
+
+        // --- PORTY: sprawdź czy na tym wierzchołku jest port ---
+        for (const auto& port : HexTile::ports) {
+            if (std::hypot(port.pos.x - pos.x, port.pos.y - pos.y) < 1.0f) {
+                players[currentPlayer].addPort(port.type);
+            }
+        }
+        // --- KONIEC PORTÓW ---
+
         buildables.push_back(std::move(settlement));
         freeBuildSettlement = false;
         if (logs) logs->add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje akademik");

@@ -1,4 +1,5 @@
 ﻿#include "Trade.h"
+#include "HexTile.h"
 
 void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer, Logs* logs) {
     playersPtr = &players; // zapamiętaj wskaźnik
@@ -73,18 +74,30 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                         for (auto& [t, v] : exchangeGet) {
                             if (v > 0) { getCount++; getType = t; }
                         }
+
+                        // --- PORTY: obsługa wymiany z bankiem z portami ---
+                        int requiredGive = 4; // domyślnie 4:1
+                        const Player& player = players[currentPlayer];
+                        if (player.hasPort(PortType::Generic)) {
+                            requiredGive = 3; // 3:1 jeśli ma port uniwersalny
+                        }
+                        if (player.hasPort(portTypeFromResource(giveType))) {
+                            requiredGive = 2; // 2:1 jeśli ma port surowca
+                        }
+                        // Jeśli ma oba porty (np. generic i surowca), wybierz lepszy (2:1)
                         if (giveCount != 1 || getCount != 1) {
                             canGet = false;
-                            if (logs) errorMsg += "Wymiana z bankiem: musisz dać dokładnie 4 jednego typu i wziąć 1 innego typu. ";
+                            if (logs) errorMsg += "Wymiana z bankiem: musisz dać dokładnie " + std::to_string(requiredGive) + " jednego typu i wziąć 1 innego typu. ";
                         }
-                        if (exchangeGive[giveType] != 4 || exchangeGet[getType] != 1) {
+                        if (exchangeGive[giveType] != requiredGive || exchangeGet[getType] != 1) {
                             canGet = false;
-                            if (logs) errorMsg += "Wymiana z bankiem: musisz dać 4 za 1. ";
+                            if (logs) errorMsg += "Wymiana z bankiem: musisz dać " + std::to_string(requiredGive) + " za 1. ";
                         }
-                        if (players[currentPlayer].getResourceCount(giveType) < 4) {
+                        if (players[currentPlayer].getResourceCount(giveType) < requiredGive) {
                             canGive = false;
                             if (logs) errorMsg += "Za mało surowca do wymiany z bankiem: " + resourceName(giveType) + ". ";
                         }
+                        // --- KONIEC PORTÓW ---
                     } else {
                         // WALIDACJA DLA WYMIANY MIĘDZY GRACZAMI
                         for (auto& [t, v] : exchangeGive) {
@@ -179,6 +192,17 @@ void TradeUI::reset() {
     exchangeButtons.clear();
     exchangePlayerButtons.clear();
     exchangeAcceptButton.reset();
+}
+
+PortType portTypeFromResource(ResourceType res) {
+    switch (res) {
+        case ResourceType::Kawa:    return PortType::Kawa;
+        case ResourceType::Piwo:    return PortType::Piwo;
+        case ResourceType::Notatki: return PortType::Notatki;
+        case ResourceType::Pizza:   return PortType::Pizza;
+        case ResourceType::Kabel:   return PortType::Kabel;
+        default:                    return PortType::Generic;
+    }
 }
 
 
