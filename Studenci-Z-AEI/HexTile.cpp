@@ -19,7 +19,7 @@ struct Vector2fPairLess {
 
 std::vector<Port> HexTile::ports;
 
-// Użycie ranges w getOuterVertices
+// dodałem ranges na laby
 static std::vector<sf::Vector2f> getOuterVertices(const std::vector<sf::Vector2f>& hexCenters, float hexSize, float epsilon = 1.0f) {
     auto vertices = getUniqueHexVertices(hexCenters, hexSize, epsilon);
     auto edges = getUniqueHexEdges(hexCenters, hexSize, epsilon);
@@ -34,7 +34,7 @@ static std::vector<sf::Vector2f> getOuterVertices(const std::vector<sf::Vector2f
         }
     }
 
-    // Filtrowanie z użyciem std::views::filter i std::views::enumerate (C++23) lub ręcznie
+    
     std::vector<sf::Vector2f> outerVertices;
     for (size_t i = 0; i < vertices.size(); ++i) {
         if (edgeCount[i] == 2)
@@ -81,7 +81,7 @@ void HexTile::setupPorts(const std::vector<sf::Vector2f>& hexCenters, float hexS
         PortType::Generic, PortType::Pizza, PortType::Generic, PortType::Kabel
     };
 
-    // Wyznacz środek planszy z użyciem ranges
+    // srodek z ranges
     sf::Vector2f center = std::accumulate(
         hexCenters.begin(), hexCenters.end(), sf::Vector2f(0, 0),
         [](const sf::Vector2f& acc, const sf::Vector2f& c) { return acc + c; }
@@ -89,7 +89,7 @@ void HexTile::setupPorts(const std::vector<sf::Vector2f>& hexCenters, float hexS
     center.x /= hexCenters.size();
     center.y /= hexCenters.size();
 
-    // Sortowanie z użyciem std::ranges::sort
+    // sortowanie z ranges
     std::ranges::sort(outerVertices, [center](const sf::Vector2f& v1, const sf::Vector2f& v2) {
         float a1 = std::atan2(v1.y - center.y, v1.x - center.x);
         float a2 = std::atan2(v2.y - center.y, v2.x - center.x);
@@ -117,12 +117,11 @@ void HexTile::draw(sf::RenderWindow& window) const {
 
         static sf::Font font;
         static bool fontLoaded = false;
-        // Sprawdzenie istnienia pliku czcionki przed załadowaniem
         if (!fontLoaded) {
             if (std::filesystem::exists("Fonts/arial.ttf")) {
                 fontLoaded = font.loadFromFile("Fonts/arial.ttf");
             } else {
-                // Możesz dodać obsługę błędu, np. nie rysować numeru lub użyć domyślnej czcionki
+                // nie chce mi się no wiadomo że czcionka będzie w plikach
                 return;
             }
         }
@@ -145,31 +144,28 @@ void HexTile::draw(sf::RenderWindow& window) const {
 void HexTile::drawPorts(sf::RenderWindow& window) {
     static sf::Font font;
     static bool fontLoaded = false;
-    // Sprawdzenie istnienia pliku czcionki przed załadowaniem
     if (!fontLoaded) {
         if (std::filesystem::exists("Fonts/pixel.ttf")) {
             fontLoaded = font.loadFromFile("Fonts/pixel.ttf");
         } else {
-            // Możesz dodać obsługę błędu, np. nie rysować podpisów portów
+            // ditto
             return;
         }
     }
     for (const auto& port : ports) {
-        // Rysuj L-kę: pozioma kreska, a do jej końca doklejona pionowa
+        // miała być elka ale wyszedł ala mostek, imo może być
         float mainLen = 40.f, mainThick = 12.f;
         float legLen = 28.f, legThick = 12.f;
 
-        // Pozioma kreska (podstawowa)
+
         sf::RectangleShape base(sf::Vector2f(mainLen, mainThick));
         base.setFillColor(sf::Color(80, 80, 80));
         base.setOrigin(mainLen / 2.f, mainThick / 2.f);
         base.setPosition(port.pos);
         base.setRotation(port.angle);
 
-        // Pionowa kreska (noga L)
         sf::RectangleShape leg(sf::Vector2f(legThick, legLen));
         leg.setFillColor(sf::Color(80, 80, 80));
-        // Ustaw nogę na końcu prawej strony poziomej kreski
         float rad = port.angle * 3.14159265f / 180.f;
         float dx = std::cos(rad) * (mainLen / 2.f - legThick / 2.f);
         float dy = std::sin(rad) * (mainLen / 2.f - legThick / 2.f);
@@ -180,12 +176,12 @@ void HexTile::drawPorts(sf::RenderWindow& window) {
         window.draw(base);
         window.draw(leg);
 
-        // Podpis portu - ciemny pomarańcz
+   
         sf::Text text;
         text.setFont(font);
         text.setString(port.label);
         text.setCharacterSize(18);
-        text.setFillColor(sf::Color(204, 85, 0)); // Ciemny pomarańcz
+		text.setFillColor(sf::Color(204, 85, 0)); // kolor portu
         text.setStyle(sf::Text::Bold);
         sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin(bounds.width / 2.f, bounds.height / 2.f);

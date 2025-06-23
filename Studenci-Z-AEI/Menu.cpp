@@ -15,7 +15,7 @@ Menu::Menu(unsigned int width, unsigned int height) {
     startButtonHoverTexture.loadFromFile("Assets/Start-on.png");
     startButtonSprite.setTexture(startButtonTexture);
 
-    // Zmniejsz obszar kliknięcia startu
+  
     startButtonSprite.setScale(0.22f, 0.22f);
 
     sf::Vector2u bgSize = bgTexture.getSize();
@@ -60,8 +60,8 @@ Menu::Menu(unsigned int width, unsigned int height) {
         playerCountTexts.push_back(txt);
     }
 
-    // Przycisk "Nicki" - lekko w prawo i do góry względem przycisku start
-    nicknameButton.setSize({ 120, 48 });
+    
+    nicknameButton.setSize({ 120, 48 });//rozmiarówka do zmian
     nicknameButton.setPosition(
         startButtonSprite.getPosition().x + 40,
         startButtonSprite.getPosition().y + startButtonSprite.getGlobalBounds().height 
@@ -109,7 +109,7 @@ void Menu::update(const sf::Vector2f& mousePos) {
         }
     }
 
-    // Kliknięcie przycisku "Nicki"
+  
     static bool nicknameBtnPressed = false;
     if (nicknameButton.getGlobalBounds().contains(mousePos)) {
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -126,7 +126,7 @@ void Menu::update(const sf::Vector2f& mousePos) {
         nicknameBtnPressed = false;
     }
 
-    // Kliknięcie na pole gracza do edycji (tylko kliknięcie, nie najechanie)
+    
     static int lastClickedPlayer = -1;
     if (nicknameEditMode) {
         for (int i = 0; i < selectedPlayerCount; ++i) {
@@ -135,8 +135,7 @@ void Menu::update(const sf::Vector2f& mousePos) {
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
                     if (lastClickedPlayer != i) {
                         nicknameEditPlayer = i;
-                        // Jeśli nick nie był jeszcze zmieniony, pokaż domyślny "Gracz X: "
-                        std::string current = playerNicknames[i];
+                        std::string current = playerNicknames[i];//domyślny player X jeśli nic nie wpisane
                         size_t colon = current.find(':');
                         if (colon != std::string::npos)
                             nicknameInput = current.substr(colon + 2);

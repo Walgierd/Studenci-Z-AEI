@@ -5,7 +5,7 @@
 
 void Road::draw(sf::RenderWindow& window) const {
     sf::RectangleShape shape;
-    shape.setSize(sf::Vector2f(40, 10));
+    shape.setSize(sf::Vector2f(60, 10));
     shape.setOrigin(20, 5);
     shape.setPosition((start + end) / 2.f);
     shape.setRotation(atan2(end.y - start.y, end.x - start.x) * 180.f / 3.14159f);
@@ -289,7 +289,7 @@ bool tryBuildSettlement(
             }
         }
         if (!connected) {
-            if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - nowy akademik musi być połączony z jednym z Twoich wcześniejszych akademików!");
+            if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - nowy akademik musi byc polaczony z jednym z Twoich wczesniejszych akademikow!");
    
             return false;
         }
@@ -322,7 +322,7 @@ bool tryBuildSettlement(
         return true;
     }
     else {
-        if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - brak zasobów do budowy akademika!");
+        if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - brak zasobow do budowy akademika!");
     }
     return false;
 }
@@ -381,11 +381,11 @@ bool tryBuildRoad(
             return true;
         }
         else {
-            if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - brak zasobów do budowy korytarza!");
+            if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - brak zasobow do budowy korytarza!");
         }
     }
     else {
-        if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - korytarz musi być połączony z Twoją infrastrukturą!");
+        if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - korytarz musi być polaczony z Twoją infrastruktura!");
     }
     return false;
 }

@@ -33,10 +33,10 @@ Game::Game()
     lastSettlementPos.resize(4, sf::Vector2f(-1000, -1000));
 
  
-	players.push_back(bank);//bank dodawany do graczy z id-1, aby uniknąć problemów z indeksowaniem
+	players.push_back(bank);//bank dodawany do graczy z id-1 ZOSTWIĆ W SPOKOJU bo wywala wektor
 
     
-    std::vector<sf::Vector2f> hexCenters;//portyyy
+    std::vector<sf::Vector2f> hexCenters;//porty tu
     for (const auto& tile : board.getTiles())
         hexCenters.push_back(tile.getPosition());
     HexTile::setupPorts(hexCenters, hexSize);
@@ -80,14 +80,11 @@ void Game::handleMenuEvents(const sf::Event& event) {
         if (menu.isStartClicked(mousePos)) {
             int playerCount = menu.getSelectedPlayerCount();
             turnManager.initialize(playerCount);
-            // Po zainicjowaniu graczy
             lastSettlementPos.assign(menu.getSelectedPlayerCount(), sf::Vector2f(-1000, -1000));
-            // Ustaw nicki graczy
             const auto& nicks = menu.getPlayerNicknames();
             auto& players = turnManager.getPlayers();
             for (size_t i = 0; i < players.size() && i < nicks.size(); ++i) {
-                // Wyciągnij tylko część po dwukropku jeśli jest (Gracz X: Nick)
-                std::string nick = nicks[i];
+                std::string nick = nicks[i];//tu tylko faktyczna część nicku
                 size_t colon = nick.find(':');
                 if (colon != std::string::npos) {
                     nick = nick.substr(colon + 2);
@@ -124,7 +121,7 @@ void Game::handleGameEvents(const sf::Event& event) {
       
         if (diceClicked) {// jeden roll na ture
             if (players[currentPlayer].hasRolled()) {
-                std::string logMsg = players[currentPlayer].getNickname() + " juz rzucił kostka w tej turze!";
+                std::string logMsg = players[currentPlayer].getNickname() + " juz rzucil kostka w tej turze!";
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);
@@ -170,7 +167,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 }).detach();
             }
 
-            if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {//złodziej przy wyrzuceniu 12
+            if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {//<----------złodziej przy wyrzuceniu 12 zmiana na debug
                 knightMoveMode = true;
                 knightMoveButtons.clear();
                 const auto& tiles = board.getTiles();
@@ -435,7 +432,7 @@ void Game::update() {
         endFont.loadFromFile("Fonts/pixel.ttf");
         sf::Text endText;
         endText.setFont(endFont);
-        endText.setString("Koniec gry! " + players[winnerId].getNickname() + " wygrywa.\nKliknij, aby wrócić do menu.");
+        endText.setString("Koniec gry! " + players[winnerId].getNickname() + " wygrywa.\nKliknij, aby wrócić do menu.");//trzeba na nick zmienić jakbyco
         endText.setCharacterSize(32);
         endText.setFillColor(sf::Color::Red);
         endText.setStyle(sf::Text::Bold);
@@ -630,7 +627,7 @@ void Game::render() {
         trade.draw(window);
 		//*****************************************************************************************budowanie w setupie
         if (setupPhase) {
-            players.push_back(bank);
+            players.push_back(bank);//BANK MUSI TU BYĆ DODANY PROSZE NIE KUSIĆ LOSU, wywala wektor bez niego
             sf::Text setupText;
             setupText.setFont(font);
             std::string msg;
@@ -690,7 +687,7 @@ void Game::render() {
                 float cardPanelY = 400.f;
                 float cardWidth = 400.f;
                 float cardHeight = 40.f;
-                int visibleIdx = 0; // Declare and initialize visibleIdx
+                int visibleIdx = 0; 
                 for (const auto& card : cards | std::views::filter([](const auto& c) { return c->type != CardType::VictoryPoint; })) {
                     sf::RectangleShape cardRect(sf::Vector2f(cardWidth, cardHeight));
                     cardRect.setPosition(cardPanelX, cardPanelY + visibleIdx * (cardHeight + 10.f));

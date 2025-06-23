@@ -54,8 +54,7 @@ std::vector<ResourceType> Board::shuffledResources() {
     std::shuffle(resources.begin(), resources.end(), g);
     return resources;
 }
-
-std::vector<int> Board::shuffledNumbers() {//ranges
+std::vector<int> Board::shuffledNumbers() {//pętla teraz ma views zamiast zwykłego fora
     auto base = std::views::iota(2, 12);
     std::vector<int> numbers;
     for (int n : base) {

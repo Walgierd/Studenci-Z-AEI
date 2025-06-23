@@ -20,8 +20,8 @@ std::string CardManager::buyCardWithMessage(Player& player) {
     player.removeResource(ResourceType::Piwo, 1);
     player.removeResource(ResourceType::Notatki, 1);
 
-    // Asynchroniczne losowanie i tworzenie karty
-    auto futureCard = std::async(std::launch::async, []() -> std::unique_ptr<Card> {
+   
+    auto futureCard = std::async(std::launch::async, []() -> std::unique_ptr<Card> {//<--------async bo why not
         std::vector<CardType> types = { CardType::FreeRoad, CardType::FreeSettlement, CardType::MoveRobber, CardType::VictoryPoint };
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -126,7 +126,7 @@ void CardManager::useCard(
         if (!canBuild) {
             playerCards[player.getId()].push_back(std::make_unique<FreeRoadCard>());
             Logs logs(sf::Font(), 10);
-            logs.add("Nie możesz zbudować żadnej drogi. Karta wraca do talii.");
+            logs.add("Nie mozesz zbudować drogi. Karta wraca do talii.");//karta daje za darmo następną budowę ale zostawiam jakby nie było miejsca na drogi itd
             it->second.erase(it->second.begin() + idx);
             return;
         }
@@ -177,19 +177,18 @@ void CardManager::useCard(
             }
         }
         if (!canBuild) {
-            // Zwróć kartę do decku
+        
             playerCards[player.getId()].push_back(std::make_unique<FreeSettlementCard>());
             Logs logs(sf::Font(), 10);
-            logs.add("Nie możesz zbudować osiedla. Karta wraca do talii.");
+            logs.add("Nie mozesz zbudowac osiedla. Karta wraca do talii.");//tu tak samo jak drogi
             it->second.erase(it->second.begin() + idx);
             return;
         }
     }
 
-    // Przekazuj flagi do use!
+ 
     card->use(player, buildables, board, knight, players, freeBuildRoad, freeBuildSettlement, knightMoveMode);
 
-    // Jeśli knightMoveMode zostało ustawione, przygotuj przyciski
     if (knightMoveMode) {
         knightMoveButtons.clear();
         const auto& tiles = board.getTiles();
@@ -264,6 +263,6 @@ void MoveRobberCard::use(
 }
 
 void VictoryPointCard::use(Player&, std::vector<std::unique_ptr<Buildable>>&, Board&, Knight&, std::vector<Player>&, bool&, bool&, bool&) {
-    // Nie usuwaj tej karty z playerCards!
-    // Punkty są liczone na podstawie liczby kart VictoryPoint w playerCards
+    // Punkty będą liczone w score, to nic nie robi ale zostawie narazie
+	// Można by dodać animację lub coś innego, ale narazie nie ma potrzeby
 }

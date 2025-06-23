@@ -59,7 +59,7 @@ void Knight::handleMoveClick(
     }
 }
 
-// Definicje KnightMoveButton
+
 KnightMoveButton::KnightMoveButton(const sf::Vector2f& p, int idx, std::function<void(int)> cb) {
     pos = p;
     tileIdx = idx;
