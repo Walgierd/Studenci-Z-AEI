@@ -46,6 +46,10 @@ private:
     std::vector<std::string> playerNicknames;
     sf::RectangleShape nicknameButton;
     sf::Text nicknameButtonText;
+    sf::Texture nicknameButtonTexture;
+    sf::Texture nicknameButtonHoverTexture;
+    sf::Sprite nicknameButtonSprite;
+    bool nicknameButtonHovered = false;
     bool nicknameEditMode;
     int nicknameEditPlayer;
     std::string nicknameInput;

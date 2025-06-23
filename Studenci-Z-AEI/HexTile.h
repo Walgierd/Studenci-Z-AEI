@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include <filesystem>
 #include <future>
+#include <map>
 
 enum class PortType {
     Generic,    
@@ -61,9 +62,27 @@ private:
     sf::ConvexShape hexShape;
     float hexSize;
     int number;
+
+    sf::Texture texture; 
+    std::string textureFileName; 
+
+    static std::map<ResourceType, sf::Texture> textures;
+    static void loadTextures();
 };
 
 
-std::vector<int> getEdgeVertexIndices(const std::vector<sf::Vector2f>& settlementSpots, const std::vector<sf::Vector2f>& hexCenters, float hexSize);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

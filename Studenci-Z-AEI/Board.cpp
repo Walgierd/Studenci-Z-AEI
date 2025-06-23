@@ -5,9 +5,23 @@
 #include <SFML/Graphics.hpp>
 #include <ranges>
 
+// Dodaj pole do przechowywania tekstury i sprite'a
+static sf::Texture backgroundTexture;
+static sf::Sprite backgroundSprite;
+
 std::vector<sf::Vector2f> g_hexCenters;
 
 Board::Board(float hexSize, sf::Vector2f center) {
+    // Załaduj tło tylko raz
+    static bool loaded = false;
+    if (!loaded) {
+        if (backgroundTexture.loadFromFile("Assets/Background.png")) {
+            backgroundSprite.setTexture(backgroundTexture);
+            // Dopasuj rozmiar do okna jeśli chcesz:
+            // backgroundSprite.setScale(...);
+        }
+        loaded = true;
+    }
     generateTiles(hexSize, center);
 }
 
@@ -54,7 +68,7 @@ std::vector<ResourceType> Board::shuffledResources() {
     std::shuffle(resources.begin(), resources.end(), g);
     return resources;
 }
-std::vector<int> Board::shuffledNumbers() {//pętla teraz ma views zamiast zwykłego fora
+std::vector<int> Board::shuffledNumbers() {
     auto base = std::views::iota(2, 12);
     std::vector<int> numbers;
     for (int n : base) {
@@ -69,6 +83,9 @@ std::vector<int> Board::shuffledNumbers() {//pętla teraz ma views zamiast zwyk�
 }
 
 void Board::draw(sf::RenderWindow& window) const {
+    // Najpierw rysuj tło
+    window.draw(backgroundSprite);
+    // Potem kafelki
     for (const auto& tile : tiles)
         tile.draw(window);
 }

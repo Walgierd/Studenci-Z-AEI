@@ -14,26 +14,34 @@ Menu::Menu(unsigned int width, unsigned int height) {
     startButtonTexture.loadFromFile("Assets/Start.png");
     startButtonHoverTexture.loadFromFile("Assets/Start-on.png");
     startButtonSprite.setTexture(startButtonTexture);
-
-  
     startButtonSprite.setScale(0.22f, 0.22f);
-
     sf::Vector2u bgSize = bgTexture.getSize();
     sf::Vector2u btnSize = startButtonTexture.getSize();
     float btnHeight = btnSize.y * 0.22f;
     float posY = (bgSize.y - btnHeight) / 2.0f + 40.0f;
-
     startButtonSprite.setPosition(60, posY);
+
+    nicknameButtonTexture.loadFromFile("Assets/Nicki.png");
+    nicknameButtonHoverTexture.loadFromFile("Assets/Nicki-on.png");
+    nicknameButtonSprite.setTexture(nicknameButtonTexture);
+    nicknameButtonSprite.setScale(0.22f, 0.22f);
+    float nickBtnY = startButtonSprite.getPosition().y + startButtonSprite.getGlobalBounds().height - 50.f;
+    nicknameButtonSprite.setPosition(startButtonSprite.getPosition().x, nickBtnY);
 
     fullscreenButtonTexture.loadFromFile("Assets/Fullscreen.png");
     fullscreenButtonSprite.setTexture(fullscreenButtonTexture);
 
-    float scale = 64.0f / fullscreenButtonTexture.getSize().x;
+    // POWIĘKSZENIE GUZIKA
+    float scale = 0.5f; // lub np. 1.2f jeśli chcesz jeszcze większy
     fullscreenButtonSprite.setScale(scale, scale);
 
+    // USTAWIENIE W PRAWYM DOLNYM ROGU
     float spriteWidth = fullscreenButtonTexture.getSize().x * scale;
     float spriteHeight = fullscreenButtonTexture.getSize().y * scale;
-    fullscreenButtonSprite.setPosition(width - spriteWidth - 400, height - spriteHeight - 400);
+    fullscreenButtonSprite.setPosition(
+        static_cast<float>(width) - spriteWidth - 30, // 30px od prawej krawędzi
+        static_cast<float>(height) - spriteHeight - 30 // 30px od dołu
+    );
 
     float btnWidth = 120;
     float startX = width / 2.f - 1.5f * btnWidth;
@@ -111,7 +119,9 @@ void Menu::update(const sf::Vector2f& mousePos) {
 
   
     static bool nicknameBtnPressed = false;
-    if (nicknameButton.getGlobalBounds().contains(mousePos)) {
+    if (nicknameButtonSprite.getGlobalBounds().contains(mousePos)) {
+        nicknameButtonHovered = true;
+        nicknameButtonSprite.setTexture(nicknameButtonHoverTexture);
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             if (!nicknameBtnPressed) {
                 nicknameEditMode = !nicknameEditMode;
@@ -123,6 +133,8 @@ void Menu::update(const sf::Vector2f& mousePos) {
             nicknameBtnPressed = false;
         }
     } else {
+        nicknameButtonHovered = false;
+        nicknameButtonSprite.setTexture(nicknameButtonTexture);
         nicknameBtnPressed = false;
     }
 
@@ -172,9 +184,7 @@ void Menu::draw(sf::RenderWindow& window) const {
     window.draw(background);
 
     window.draw(startButtonSprite);
-
-    window.draw(nicknameButton);
-    window.draw(nicknameButtonText);
+    window.draw(nicknameButtonSprite);
 
     
     if (nicknameEditMode) {

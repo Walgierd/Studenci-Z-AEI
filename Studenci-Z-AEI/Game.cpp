@@ -714,31 +714,31 @@ void Game::render() {
 //*****************************************************************************************przyciskoza
 void Game::setupPlayerButtons() {
     playerButtons.clear();
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj korytarz", sf::Vector2f(30, 350), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj korytarz", sf::Vector2f(30, 360), [&]() {
         buildMode = BuildMode::Road;
         buildButtons.clear();
         auto& players = turnManager.getPlayers();
         int currentPlayer = turnManager.getCurrentPlayerIndex();
         initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, players, currentPlayer, window);
     }));
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj akademik", sf::Vector2f(30, 410), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj akademik", sf::Vector2f(30, 420), [&]() {
         buildMode = BuildMode::Settlement;
         buildButtons.clear();
         auto& players = turnManager.getPlayers();
         int currentPlayer = turnManager.getCurrentPlayerIndex();
         initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, players, currentPlayer, window);
     }));
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj kampus", sf::Vector2f(30, 470), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj kampus", sf::Vector2f(30, 480), [&]() {
         buildMode = BuildMode::City;
     }));
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Wymiana", sf::Vector2f(30, 530), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Wymiana", sf::Vector2f(30, 540), [&]() {
         auto& players = turnManager.getPlayers();
         // Dodaj bank do wektora graczy na czas wymiany
         players.push_back(bank);
         int currentPlayer = turnManager.getCurrentPlayerIndex();
         trade.startTrade(font, players, currentPlayer, &logs);
     }));
-    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Kolejna tura", sf::Vector2f(30, 590), [&]() {
+    playerButtons.push_back(std::make_unique<SimpleButton>(font, "Kolejna tura", sf::Vector2f(30, 600), [&]() {
         if (!turnManager.getPlayers().empty() && !turnManager.getCurrentPlayer().hasRolled()) {
             std::string logMsg = players[turnManager.getCurrentPlayerIndex()].getNickname() + " najpierw rzuc kostka!";
             std::thread([this, logMsg]() {
@@ -761,7 +761,7 @@ void Game::setupPlayerButtons() {
         buildButtons.clear();
     }));
 
-    cardManager.buyCardButton = std::make_unique<SimpleButton>(font, "Zakup karty", sf::Vector2f(30, 650), [&]() {
+    cardManager.buyCardButton = std::make_unique<SimpleButton>(font, "Zakup karty", sf::Vector2f(30, 660), [&]() {
         if (!turnManager.getPlayers().empty()) {
             auto& player = turnManager.getCurrentPlayer();
             std::string cardName = cardManager.buyCardWithMessage(player);
@@ -774,7 +774,7 @@ void Game::setupPlayerButtons() {
             }
         }
     });
-    cardManager.showCardsButton = std::make_unique<SimpleButton>(font, "Zobacz karty", sf::Vector2f(30, 710), [this]() {
+    cardManager.showCardsButton = std::make_unique<SimpleButton>(font, "Zobacz karty", sf::Vector2f(30, 720), [this]() {
         cardManager.cardsVisible = !cardManager.cardsVisible;
     });
 }

@@ -18,6 +18,7 @@ struct Vector2fPairLess {
 };
 
 std::vector<Port> HexTile::ports;
+std::map<ResourceType, sf::Texture> HexTile::textures;
 
 // dodałem ranges na laby
 static std::vector<sf::Vector2f> getOuterVertices(const std::vector<sf::Vector2f>& hexCenters, float hexSize, float epsilon = 1.0f) {
@@ -48,13 +49,34 @@ HexTile::HexTile(float x, float y, float size, ResourceType resource, int number
 {
     setupHexShape(size);
     hexShape.setPosition(position);
-    switch (resourceType) {
-    case ResourceType::Kawa:    hexShape.setFillColor(sf::Color(139, 69, 19)); break;
-    case ResourceType::Piwo:    hexShape.setFillColor(sf::Color(255, 215, 0)); break; // piwopiwopiwo
-    case ResourceType::Notatki: hexShape.setFillColor(sf::Color::White); break;
-    case ResourceType::Pizza:   hexShape.setFillColor(sf::Color(255, 99, 71)); break;
-    case ResourceType::Kabel:   hexShape.setFillColor(sf::Color(128, 128, 128)); break;
-    default:                    hexShape.setFillColor(sf::Color(100, 100, 100)); break;
+
+    loadTextures();
+
+    auto it = textures.find(resourceType);
+    if (it != textures.end() && it->second.getSize().x > 0) {
+        hexShape.setTexture(&it->second);
+        hexShape.setFillColor(sf::Color::White);
+    } else {
+        hexShape.setFillColor(sf::Color(100, 100, 100));
+    }
+}
+
+void HexTile::loadTextures() {
+    static bool loaded = false;
+    if (loaded) return;
+    loaded = true;
+
+    const std::vector<std::pair<ResourceType, std::string>> textureFiles = {
+        {ResourceType::Pizza,    "Assets/pizza.png"},
+        {ResourceType::Kawa,     "Assets/kawa.png"},
+        {ResourceType::Piwo,     "Assets/piwo.png"},
+        {ResourceType::Notatki,  "Assets/notatki.png"},
+        {ResourceType::Kabel,    "Assets/kabel.png"}
+    };
+    for (const auto& [type, file] : textureFiles) {
+        sf::Texture tex;
+        tex.loadFromFile(file);
+        textures[type] = std::move(tex);
     }
 }
 
@@ -181,7 +203,7 @@ void HexTile::drawPorts(sf::RenderWindow& window) {
         text.setFont(font);
         text.setString(port.label);
         text.setCharacterSize(18);
-		text.setFillColor(sf::Color(204, 85, 0)); // kolor portu
+		text.setFillColor(sf::Color::Yellow); // kolor portu
         text.setStyle(sf::Text::Bold);
         sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
