@@ -417,7 +417,7 @@ void Game::update() {
     
     int winnerId = -1;
     for (const auto& player : players) {
-        if (score.getScore(player.getId()) >= 3) {//WARUNEK ZWYCIĘZTWA(standard -15) <-------------------------------------------
+        if (score.getScore(player.getId()) >= 15) {//WARUNEK ZWYCIĘZTWA(standard -15) <-------------------------------------------
             winnerId = player.getId();  
             break;
         }

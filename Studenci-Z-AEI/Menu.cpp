@@ -176,7 +176,7 @@ void Menu::draw(sf::RenderWindow& window) const {
     window.draw(nicknameButton);
     window.draw(nicknameButtonText);
 
-    // Nicki na prawo od przycisku "Nicki" - pojawiają się dopiero po kliknięciu przycisku
+    
     if (nicknameEditMode) {
         for (int i = 0; i < selectedPlayerCount; ++i) {
             sf::RectangleShape nickBg(sf::Vector2f(260, 40));

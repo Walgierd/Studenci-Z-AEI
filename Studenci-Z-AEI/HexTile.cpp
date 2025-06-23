@@ -69,7 +69,7 @@ void HexTile::setupHexShape(float size) {
 void HexTile::setupPorts(const std::vector<sf::Vector2f>& hexCenters, float hexSize) {
     ports.clear();
 
-    auto futureOuterVertices = std::async(std::launch::async, [&]() {
+    auto futureOuterVertices = std::async(std::launch::async, [&]() {//async na laby
         return getOuterVertices(hexCenters, hexSize);
     });
 

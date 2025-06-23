@@ -1,7 +1,7 @@
-﻿
-#include "Menago.h"
+﻿#include "Menago.h"
+#include <ranges>
 
-//usunięte i przenisione do turnmanager w game bo łatwiej się pisało
+//tury usunięte i przenisione do turnmanager w game bo łatwiej się pisało
 
 
 std::map<int, std::map<ResourceType, int>> handleDiceRollWithLog(
@@ -19,18 +19,24 @@ std::map<int, std::map<ResourceType, int>> handleDiceRollWithLog(
     players[currentPlayer].rollDice();
     int diceSum = players[currentPlayer].getDice1() + players[currentPlayer].getDice2();
 
-    for (const auto& tile : board.getTiles()) {
-        if (tile.getNumber() == diceSum && !knight.blocksTile(static_cast<int>(&tile - &board.getTiles()[0]))) {
-            for (const auto& b : buildables) {
-                if (auto* s = dynamic_cast<Settlement*>(b.get())) {
-                    if (std::hypot(s->pos.x - tile.getPosition().x, s->pos.y - tile.getPosition().y) < hexSize + 2) {
-                        int amount = s->isCity ? 2 : 1;
-                        players[s->ownerId].addResource(tile.getResourceType(), amount);
-                        received[s->ownerId][tile.getResourceType()] += amount;
-                    }
+    const auto& tiles = board.getTiles();
+
+    int idx = 0;
+    for (const auto& tile : tiles) {
+        if (tile.getNumber() == diceSum && !knight.blocksTile(idx)) {//filtrowanie z ranges
+            auto settlements = buildables
+                | std::views::filter([](const auto& b) { return dynamic_cast<Settlement*>(b.get()) != nullptr; });
+
+            for (const auto& b : settlements) {
+                auto* s = static_cast<Settlement*>(b.get());
+                if (std::hypot(s->pos.x - tile.getPosition().x, s->pos.y - tile.getPosition().y) < hexSize + 2) {
+                    int amount = s->isCity ? 2 : 1;
+                    players[s->ownerId].addResource(tile.getResourceType(), amount);
+                    received[s->ownerId][tile.getResourceType()] += amount;
                 }
             }
         }
+        ++idx;
     }
     return received;
 }
