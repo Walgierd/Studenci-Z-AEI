@@ -80,6 +80,8 @@ void Game::handleMenuEvents(const sf::Event& event) {
         if (menu.isStartClicked(mousePos)) {
             int playerCount = menu.getSelectedPlayerCount();
             turnManager.initialize(playerCount);
+            // Po zainicjowaniu graczy
+            lastSettlementPos.assign(menu.getSelectedPlayerCount(), sf::Vector2f(-1000, -1000));
             // Ustaw nicki graczy
             const auto& nicks = menu.getPlayerNicknames();
             auto& players = turnManager.getPlayers();
@@ -628,10 +630,11 @@ void Game::render() {
         trade.draw(window);
 		//*****************************************************************************************budowanie w setupie
         if (setupPhase) {
+            players.push_back(bank);
             sf::Text setupText;
             setupText.setFont(font);
             std::string msg;
-            auto& playersNoBank = turnManager.getPlayers(); // bez banku!
+            auto& playersNoBank = turnManager.getPlayers(); 
             msg = PLAYER_NICK(playersNoBank, setupPlayerIndex);
             if (setupStep == 0)
                 msg += " stawia akademik";
