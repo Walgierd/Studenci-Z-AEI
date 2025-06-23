@@ -2,6 +2,7 @@
 #include <map>
 #include <random>
 #include <set>
+#include <string>
 #include "Resource.h"
 #include "HexTile.h"
 
@@ -47,6 +48,9 @@ public:
     bool hasAnyGenericPort() const { return ownedPorts.count(PortType::Generic) > 0; }
     const std::set<PortType>& getPorts() const { return ownedPorts; }
 
+    void setNickname(const std::string& n) { nickname = n; }
+    const std::string& getNickname() const { return nickname; }
+
 private:
     int id;
     std::map<ResourceType, int> resources;
@@ -54,4 +58,5 @@ private:
     int dice1, dice2;
     bool usedCardThisTurn = false;
     std::set<PortType> ownedPorts;
+    std::string nickname = "";
 };

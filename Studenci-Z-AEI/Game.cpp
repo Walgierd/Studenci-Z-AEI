@@ -67,6 +67,10 @@ void Game::handleEvents() {
             handleMenuEvents(event);
         else
             handleGameEvents(event);
+
+        if (event.type == sf::Event::TextEntered) {
+            menu.handleTextEntered(event.text.unicode);
+        }
     }
 }
 
@@ -76,7 +80,19 @@ void Game::handleMenuEvents(const sf::Event& event) {
         if (menu.isStartClicked(mousePos)) {
             int playerCount = menu.getSelectedPlayerCount();
             turnManager.initialize(playerCount);
-            for (auto& player : turnManager.getPlayers()) {
+            // Ustaw nicki graczy
+            const auto& nicks = menu.getPlayerNicknames();
+            auto& players = turnManager.getPlayers();
+            for (size_t i = 0; i < players.size() && i < nicks.size(); ++i) {
+                // Wyciągnij tylko część po dwukropku jeśli jest (Gracz X: Nick)
+                std::string nick = nicks[i];
+                size_t colon = nick.find(':');
+                if (colon != std::string::npos) {
+                    nick = nick.substr(colon + 2);
+                }
+                players[i].setNickname(nick);
+            }
+            for (auto& player : players) {
                 player.addResource(ResourceType::Pizza, 10);
                 player.addResource(ResourceType::Piwo, 10);
                 player.addResource(ResourceType::Notatki, 10);
@@ -106,7 +122,7 @@ void Game::handleGameEvents(const sf::Event& event) {
       
         if (diceClicked) {// jeden roll na ture
             if (players[currentPlayer].hasRolled()) {
-                std::string logMsg = "Juz rzuciłes kostka w tej turze!";
+                std::string logMsg = players[currentPlayer].getNickname() + " juz rzucił kostka w tej turze!";
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);
@@ -121,7 +137,7 @@ void Game::handleGameEvents(const sf::Event& event) {
             int d2 = players[currentPlayer].getDice2();
 
             {
-                std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " rzuca kostka, wypadlo " + std::to_string(d1 + d2);
+                std::string logMsg = players[currentPlayer].getNickname() + " rzuca kostka, wypadlo " + std::to_string(d1 + d2);
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);
@@ -133,7 +149,7 @@ void Game::handleGameEvents(const sf::Event& event) {
             for (const auto& [pid, resMap] : received) {
                 if (resMap.empty()) continue;
                 anyResource = true;
-                resLog += " Gracz " + std::to_string(pid + 1) + ":";
+                resLog += " " + players[pid].getNickname() + ":";
                 bool first = true;
                 for (const auto& [rtype, count] : resMap) {
                     if (!first) resLog += ",";
@@ -237,7 +253,7 @@ void Game::handleGameEvents(const sf::Event& event) {
 
        
         if (!players[currentPlayer].hasRolled()) {//rzut kostką przed innymi akcjami
-            std::string logMsg = "Najpierw rzuc kostka!";
+            std::string logMsg = players[currentPlayer].getNickname() + " najpierw rzuc kostka!";
             std::thread([this, logMsg]() {
                 std::lock_guard<std::mutex> lock(logsMutex);
                 logs.add(logMsg);
@@ -268,7 +284,7 @@ void Game::handleGameEvents(const sf::Event& event) {
             for (const auto& pos : settlementSpots) {
                 if (std::hypot(mousePos.x - pos.x, mousePos.y - pos.y) < 15.f) {
                     if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlement, setupPhase, &logs)) {
-                        std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje akademik";
+                        std::string logMsg = players[currentPlayer].getNickname() + " buduje akademik";
                         std::thread([this, logMsg]() {
                             std::lock_guard<std::mutex> lock(logsMutex);
                             logs.add(logMsg);
@@ -290,7 +306,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 if (std::hypot(mousePos.x - mid.x, mousePos.y - mid.y) < 15.f) {
                     bool valid = tryBuildRoad(buildables, players, currentPlayer, edge.first, edge.second, freeBuildRoad, setupPhase, lastSettlementPos[currentPlayer], &logs);
                     if (valid || (freeBuildRoad && isRoadConnected(buildables, edge.first, edge.second, players[currentPlayer].getId()))) {
-                        std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje korytarz";
+                        std::string logMsg = players[currentPlayer].getNickname() + " buduje korytarz";
                         std::thread([this, logMsg]() {
                             std::lock_guard<std::mutex> lock(logsMutex);
                             logs.add(logMsg);
@@ -310,7 +326,7 @@ void Game::handleGameEvents(const sf::Event& event) {
         //*****************************************************************************************budowa kampusów
         else if (buildMode == BuildMode::City) {
             if (tryBuildCity(buildables, players, currentPlayer, mousePos)) {
-                std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje kampus";
+                std::string logMsg = players[currentPlayer].getNickname() + " buduje kampus";
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);
@@ -354,7 +370,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                     if (realIdx != -1) {
                     
                         if (turnManager.getCurrentPlayer().hasUsedCardThisTurn()) {
-                            std::string logMsg = "Nie mozesz uzyc wiecej niż 1 karty w tej turze!";
+                            std::string logMsg = players[currentPlayer].getNickname() + " nie mozesz uzyc wiecej niż 1 karty w tej turze!";
                             std::thread([this, logMsg]() {
                                 std::lock_guard<std::mutex> lock(logsMutex);
                                 logs.add(logMsg);
@@ -402,8 +418,8 @@ void Game::update() {
     
     int winnerId = -1;
     for (const auto& player : players) {
-        if (score.getScore(player.getId()) >= 15) {//WARUNEK ZWYCIĘZTWA(standard -15) <-------------------------------------------
-            winnerId = player.getId();
+        if (score.getScore(player.getId()) >= 3) {//WARUNEK ZWYCIĘZTWA(standard -15) <-------------------------------------------
+            winnerId = player.getId();  
             break;
         }
     }
@@ -417,7 +433,7 @@ void Game::update() {
         endFont.loadFromFile("Fonts/pixel.ttf");
         sf::Text endText;
         endText.setFont(endFont);
-        endText.setString("Koniec gry! Gracz " + std::to_string(winnerId + 1) + " wygrywa.\nKliknij, aby wrócić do menu.");
+        endText.setString("Koniec gry! " + players[winnerId].getNickname() + " wygrywa.\nKliknij, aby wrócić do menu.");
         endText.setCharacterSize(32);
         endText.setFillColor(sf::Color::Red);
         endText.setStyle(sf::Text::Bold);
@@ -612,15 +628,15 @@ void Game::render() {
         trade.draw(window);
 		//*****************************************************************************************budowanie w setupie
         if (setupPhase) {
-            players.push_back(bank);
             sf::Text setupText;
             setupText.setFont(font);
             std::string msg;
-            int playerNum = setupPlayerIndex + 1;
+            auto& playersNoBank = turnManager.getPlayers(); // bez banku!
+            msg = PLAYER_NICK(playersNoBank, setupPlayerIndex);
             if (setupStep == 0)
-                msg = "Gracz " + std::to_string(playerNum) + " stawia akademik";
+                msg += " stawia akademik";
             else
-                msg = "Gracz " + std::to_string(playerNum) + " stawia korytarz";
+                msg += " stawia korytarz";
             setupText.setString(msg);
             setupText.setCharacterSize(40);
             setupText.setFillColor(sf::Color::Yellow);
@@ -724,7 +740,7 @@ void Game::setupPlayerButtons() {
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Kolejna tura", sf::Vector2f(30, 590), [&]() {
         if (!turnManager.getPlayers().empty() && !turnManager.getCurrentPlayer().hasRolled()) {
-            std::string logMsg = "Najpierw rzuc kostka!";
+            std::string logMsg = players[turnManager.getCurrentPlayerIndex()].getNickname() + " najpierw rzuc kostka!";
             std::thread([this, logMsg]() {
                 std::lock_guard<std::mutex> lock(logsMutex);
                 logs.add(logMsg);
@@ -732,7 +748,7 @@ void Game::setupPlayerButtons() {
             return;
         }
         turnManager.nextTurn();
-        std::string logMsg = "Tura gracza: " + std::to_string(turnManager.getCurrentPlayer().getId() + 1);
+        std::string logMsg = "Tura gracza: " + players[turnManager.getCurrentPlayerIndex()].getNickname();
         std::thread([this, logMsg]() {
             std::lock_guard<std::mutex> lock(logsMutex);
             logs.add(logMsg);
@@ -750,7 +766,7 @@ void Game::setupPlayerButtons() {
             auto& player = turnManager.getCurrentPlayer();
             std::string cardName = cardManager.buyCardWithMessage(player);
             if (!cardName.empty()) {
-                std::string logMsg = "Gracz " + std::to_string(player.getId() + 1) + " zakupil karte: " + cardName;
+                std::string logMsg = players[turnManager.getCurrentPlayerIndex()].getNickname() + " zakupil karte: " + cardName;
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);

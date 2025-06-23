@@ -20,6 +20,10 @@
 #include <mutex>
 #include <vector>
 
+inline std::string PLAYER_NICK(const std::vector<Player>& players, int playerIndex) {
+    return players[playerIndex].getNickname();
+}
+
 class Game {
 public:
     Game();

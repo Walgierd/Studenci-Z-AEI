@@ -1,6 +1,7 @@
 ﻿#include "Buildable.h"
 #include <filesystem>
 #include <ranges>
+#include "Game.h"
 
 void Road::draw(sf::RenderWindow& window) const {
     sf::RectangleShape shape;
@@ -288,7 +289,7 @@ bool tryBuildSettlement(
             }
         }
         if (!connected) {
-            if (logs) logs->add("Nowy akademik musi byc polaczony z jednym z Twoich wczesniejszych akademikow!");
+            if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - nowy akademik musi być połączony z jednym z Twoich wcześniejszych akademików!");
    
             return false;
         }
@@ -317,11 +318,11 @@ bool tryBuildSettlement(
             }
         }
 
-        if (logs) logs->add("Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje akademik");
+        if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " buduje akademik");
         return true;
     }
     else {
-        if (logs) logs->add("Brak zasobow do budowy akademika!");
+        if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - brak zasobów do budowy akademika!");
     }
     return false;
 }
@@ -345,7 +346,7 @@ bool tryBuildRoad(
             bool reverse = (std::hypot(r->start.x - end.x, r->start.y - end.y) < 1.0f &&
                             std::hypot(r->end.x - start.x, r->end.y - start.y) < 1.0f);
             if (same || reverse) {
-                if (logs) logs->add("Droga już istnieje!");
+                if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - droga już istnieje!");
                 return false;
             }
         }
@@ -376,14 +377,15 @@ bool tryBuildRoad(
             road->end = end;
             buildables.push_back(std::move(road));
             freeBuildRoad = false;
+            if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " buduje korytarz");
             return true;
         }
         else {
-            if (logs) logs->add("Brak zasobow do budowy korytarza!");
+            if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - brak zasobów do budowy korytarza!");
         }
     }
     else {
-        if (logs) logs->add("Korytarz musi byc polaczony z Twoja infrastruktura!");
+        if (logs) logs->add(PLAYER_NICK(players, currentPlayer) + " - korytarz musi być połączony z Twoją infrastrukturą!");
     }
     return false;
 }

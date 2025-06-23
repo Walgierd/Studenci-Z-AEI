@@ -1,5 +1,6 @@
 ﻿#include "Menu.h"
-
+#include <regex>
+#include <ranges>
 
 Menu::Menu(unsigned int width, unsigned int height) {
     this->width = width;
@@ -14,11 +15,12 @@ Menu::Menu(unsigned int width, unsigned int height) {
     startButtonHoverTexture.loadFromFile("Assets/Start-on.png");
     startButtonSprite.setTexture(startButtonTexture);
 
-    startButtonSprite.setScale(0.3f, 0.3f);
+    // Zmniejsz obszar kliknięcia startu
+    startButtonSprite.setScale(0.22f, 0.22f);
 
     sf::Vector2u bgSize = bgTexture.getSize();
     sf::Vector2u btnSize = startButtonTexture.getSize();
-    float btnHeight = btnSize.y * 0.3f;
+    float btnHeight = btnSize.y * 0.22f;
     float posY = (bgSize.y - btnHeight) / 2.0f + 40.0f;
 
     startButtonSprite.setPosition(60, posY);
@@ -57,6 +59,27 @@ Menu::Menu(unsigned int width, unsigned int height) {
         txt.setPosition(btn.getPosition().x + 10, btn.getPosition().y + 10);
         playerCountTexts.push_back(txt);
     }
+
+    // Przycisk "Nicki" - lekko w prawo i do góry względem przycisku start
+    nicknameButton.setSize({ 120, 48 });
+    nicknameButton.setPosition(
+        startButtonSprite.getPosition().x + 40,
+        startButtonSprite.getPosition().y + startButtonSprite.getGlobalBounds().height 
+    );
+    nicknameButton.setFillColor(sf::Color(80, 80, 180));
+    nicknameButtonText.setFont(font);
+    nicknameButtonText.setString("Nicki");
+    nicknameButtonText.setCharacterSize(28);
+    nicknameButtonText.setFillColor(sf::Color::White);
+    nicknameButtonText.setPosition(nicknameButton.getPosition().x + 18, nicknameButton.getPosition().y + 8);
+
+    nicknameEditMode = false;
+    nicknameEditPlayer = -1;
+    nicknameInput = "";
+
+    playerNicknames.resize(4);
+    for (int i = 0; i < 4; ++i)
+        playerNicknames[i] = "Gracz " + std::to_string(i + 1);
 }
 
 void Menu::update(const sf::Vector2f& mousePos) {
@@ -85,11 +108,98 @@ void Menu::update(const sf::Vector2f& mousePos) {
             selectedPlayerCount = static_cast<int>(i) + 2;
         }
     }
+
+    // Kliknięcie przycisku "Nicki"
+    static bool nicknameBtnPressed = false;
+    if (nicknameButton.getGlobalBounds().contains(mousePos)) {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            if (!nicknameBtnPressed) {
+                nicknameEditMode = !nicknameEditMode;
+                nicknameEditPlayer = -1;
+                nicknameInput = "";
+                nicknameBtnPressed = true;
+            }
+        } else {
+            nicknameBtnPressed = false;
+        }
+    } else {
+        nicknameBtnPressed = false;
+    }
+
+    // Kliknięcie na pole gracza do edycji (tylko kliknięcie, nie najechanie)
+    static int lastClickedPlayer = -1;
+    if (nicknameEditMode) {
+        for (int i = 0; i < selectedPlayerCount; ++i) {
+            sf::FloatRect nickRect(nicknameButton.getPosition().x + nicknameButton.getSize().x + 20, nicknameButton.getPosition().y + i * 52, 260, 40);
+            if (nickRect.contains(mousePos)) {
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+                    if (lastClickedPlayer != i) {
+                        nicknameEditPlayer = i;
+                        // Jeśli nick nie był jeszcze zmieniony, pokaż domyślny "Gracz X: "
+                        std::string current = playerNicknames[i];
+                        size_t colon = current.find(':');
+                        if (colon != std::string::npos)
+                            nicknameInput = current.substr(colon + 2);
+                        else
+                            nicknameInput = "";
+                        lastClickedPlayer = i;
+                    }
+                } else if (lastClickedPlayer == i) {
+                    lastClickedPlayer = -1;
+                }
+            }
+        }
+    }
+}
+
+void Menu::handleTextEntered(sf::Uint32 unicode) {
+    if (!nicknameEditMode || nicknameEditPlayer == -1) return;
+    if (unicode == 8) { // Backspace
+        if (!nicknameInput.empty()) nicknameInput.pop_back();
+    } else if (unicode == 13) { // Enter
+        std::regex nickRegex("^[A-Za-z0-9_]{1,7}$");
+        if (!nicknameInput.empty() && std::regex_match(nicknameInput, nickRegex))
+            playerNicknames[nicknameEditPlayer] = "Gracz " + std::to_string(nicknameEditPlayer + 1) + ": " + nicknameInput;
+        else
+            playerNicknames[nicknameEditPlayer] = "Gracz " + std::to_string(nicknameEditPlayer + 1);
+        nicknameEditPlayer = -1;
+        nicknameInput = "";
+    } else if (nicknameInput.size() < 7 && unicode >= 32 && unicode < 128) {
+        nicknameInput += static_cast<char>(unicode);
+    }
 }
 
 void Menu::draw(sf::RenderWindow& window) const {
     window.draw(background);
+
     window.draw(startButtonSprite);
+
+    window.draw(nicknameButton);
+    window.draw(nicknameButtonText);
+
+    // Nicki na prawo od przycisku "Nicki" - pojawiają się dopiero po kliknięciu przycisku
+    if (nicknameEditMode) {
+        for (int i = 0; i < selectedPlayerCount; ++i) {
+            sf::RectangleShape nickBg(sf::Vector2f(260, 40));
+            nickBg.setPosition(nicknameButton.getPosition().x + nicknameButton.getSize().x + 20, nicknameButton.getPosition().y + i * 52);
+            nickBg.setFillColor((nicknameEditPlayer == i) ? sf::Color(60, 60, 120, 180) : sf::Color(40, 40, 40, 120));
+            window.draw(nickBg);
+
+            sf::Text nickText;
+            nickText.setFont(font);
+            if (nicknameEditPlayer == i) {
+                nickText.setString("Gracz " + std::to_string(i + 1) + ": " + nicknameInput + "|");
+                nickText.setFillColor(sf::Color::Cyan);
+            } else {
+                nickText.setString(playerNicknames[i]);
+                nickText.setFillColor(sf::Color::White);
+            }
+            nickText.setCharacterSize(28);
+            nickText.setPosition(nicknameButton.getPosition().x + nicknameButton.getSize().x + 30, nicknameButton.getPosition().y + i * 52 + 4);
+            window.draw(nickText);
+        }
+    }
+
     window.draw(fullscreenButtonSprite);
     for (const auto& btn : playerCountButtons) {
         window.draw(btn);
@@ -131,4 +241,18 @@ void Menu::handleFullscreenToggle(sf::RenderWindow& window, unsigned int& curren
         currentStyle = sf::Style::Default;
         window.create(sf::VideoMode(width, height), "Studenci z AEI", currentStyle);
     }
+}
+
+void Menu::setPlayerNicknames(const std::vector<std::string>& nicks) {
+    for (size_t i = 0; i < std::min(nicks.size(), playerNicknames.size()); ++i) {
+        std::regex nickRegex("^[A-Za-z0-9_]{1,7}$");
+        if (!nicks[i].empty() && std::regex_match(nicks[i], nickRegex))
+            playerNicknames[i] = "Gracz " + std::to_string(i + 1) + ": " + nicks[i];
+        else
+            playerNicknames[i] = "Gracz " + std::to_string(i + 1);
+    }
+}
+
+const std::vector<std::string>& Menu::getPlayerNicknames() const {
+    return playerNicknames;
 }

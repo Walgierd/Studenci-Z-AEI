@@ -1,12 +1,12 @@
 ﻿#include "PlayerUI.h"
-
+#include "Game.h"
 
 void PlayerUI::draw(const Player& player, sf::RenderWindow& window, float x, float y) const {
     sf::Text playerIdText;
     playerIdText.setFont(font);
     playerIdText.setCharacterSize(32);
     playerIdText.setFillColor(sf::Color::White);
-    playerIdText.setString("Gracz " + std::to_string(player.getId() + 1));
+    playerIdText.setString(player.getNickname());
     playerIdText.setPosition(x, y);
     window.draw(playerIdText);
 

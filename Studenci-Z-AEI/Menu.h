@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <regex>
 #include "Drawable.h"
 #include <filesystem>
 
@@ -20,6 +21,9 @@ public:
     void setFullscreenToggleRequested(bool value); 
 
     void handleFullscreenToggle(sf::RenderWindow& window, unsigned int& currentStyle);
+    void setPlayerNicknames(const std::vector<std::string>& nicks);
+    const std::vector<std::string>& getPlayerNicknames() const;
+    void handleTextEntered(sf::Uint32 unicode);
 
 private:
     sf::Sprite background;
@@ -39,4 +43,10 @@ private:
     int selectedPlayerCount = 2;
     unsigned int width;
     unsigned int height;
+    std::vector<std::string> playerNicknames;
+    sf::RectangleShape nicknameButton;
+    sf::Text nicknameButtonText;
+    bool nicknameEditMode;
+    int nicknameEditPlayer;
+    std::string nicknameInput;
 };

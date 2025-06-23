@@ -2,6 +2,8 @@
 #include "HexTile.h"
 #include <thread>
 #include <mutex>
+#include"Game.h"
+
 
 // Mutex do synchronizacji logów w Trade.cpp
 std::mutex tradeLogsMutex;
@@ -22,7 +24,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
             continue;
         }
 
-        std::string label = (players[i].getId() == -1) ? "Bank" : "Gracz " + std::to_string(players[i].getId() + 1);
+        std::string label = (players[i].getId() == -1) ? "Bank" : players[i].getNickname();
         exchangePlayerButtons.push_back(std::make_unique<SimpleButton>(font, label, sf::Vector2f(300, y), [this, &font, &players, currentPlayer, i, logs]() mutable {
             exchangeTargetPlayer = static_cast<int>(i);
             exchangeButtons.clear();
@@ -114,8 +116,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                             if (players[exchangeTargetPlayer].getResourceCount(t) < v) {
                                 canGet = false;
                                 if (logs && v > 0)
-                                    errorMsg += "Gracz " + std::to_string(players[exchangeTargetPlayer].getId() + 1) +
-                                        " ma za mało: " + resourceName(t) + ". ";
+                                    errorMsg += players[exchangeTargetPlayer].getNickname() + " ma za mało: " + resourceName(t) + ". ";
                             }
                         }
                     }
@@ -129,7 +130,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                                 players[currentPlayer].addResource(t, v);
                             }
                             if (logs) {
-                                std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " wymienia z Bankiem";
+                                std::string logMsg = PLAYER_NICK(players, currentPlayer) + " wymienia z Bankiem";
                                 std::thread([logs, logMsg]() {
                                     std::lock_guard<std::mutex> lock(tradeLogsMutex);
                                     logs->add(logMsg);
@@ -145,8 +146,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                                 players[currentPlayer].addResource(t, v);
                             }
                             if (logs) {
-                                std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) +
-                                    " wymienia z Graczem " + std::to_string(players[exchangeTargetPlayer].getId() + 1);
+                                std::string logMsg = PLAYER_NICK(players, currentPlayer) + " wymienia z " + PLAYER_NICK(players, exchangeTargetPlayer);
                                 std::thread([logs, logMsg]() {
                                     std::lock_guard<std::mutex> lock(tradeLogsMutex);
                                     logs->add(logMsg);
