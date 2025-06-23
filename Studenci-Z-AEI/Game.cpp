@@ -106,7 +106,7 @@ void Game::handleGameEvents(const sf::Event& event) {
       
         if (diceClicked) {// jeden roll na ture
             if (players[currentPlayer].hasRolled()) {
-                std::string logMsg = "Już rzuciłeś kostką w tej turze!";
+                std::string logMsg = "Juz rzuciłes kostka w tej turze!";
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);
@@ -329,7 +329,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 buildMode = BuildMode::None;
             }
         }
-        //*****************************************************************************************pokazywanie kart
+        //*****************************************************************************************pokazywanie kart i korzystanie
         if (cardManager.cardsVisible && !turnManager.getPlayers().empty()) {
             int currentPlayerId = turnManager.getCurrentPlayer().getId();
             auto& playerCardsMap = cardManager.getPlayerCards();
@@ -351,7 +351,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                     ++visibleIdx;
                 }
                 if (clickedIdx != -1) {
-                    // Znajdź faktyczny indeks karty w oryginalnym wektorze (bo clickedIdx to indeks widocznych, nie w oryginalnym wektorze!)
+                  
                     int realIdx = -1;
                     int count = 0;
                     for (size_t i = 0; i < cards.size(); ++i) {
@@ -363,9 +363,9 @@ void Game::handleGameEvents(const sf::Event& event) {
                         ++count;
                     }
                     if (realIdx != -1) {
-                        // Dodaj log przed wywołaniem useCard, jeśli gracz już użył kartę
+                    
                         if (turnManager.getCurrentPlayer().hasUsedCardThisTurn()) {
-                            std::string logMsg = "Nie możesz użyć więcej niż 1 karty w tej turze!";
+                            std::string logMsg = "Nie mozesz uzyc wiecej niż 1 karty w tej turze!";
                             std::thread([this, logMsg]() {
                                 std::lock_guard<std::mutex> lock(logsMutex);
                                 logs.add(logMsg);
@@ -547,7 +547,7 @@ void Game::update() {
         }
     }
 }
-
+//******************************************************************************************renderowanie
 void Game::render() {
     window.clear();
     if (inMenu) {
@@ -560,7 +560,7 @@ void Game::render() {
         board.draw(window);
 
        
-        HexTile::drawPorts(window);//rys porty
+        HexTile::drawPorts(window);
 
         {
             std::lock_guard<std::mutex> lock(buildMutex);
@@ -632,7 +632,7 @@ void Game::render() {
         }
 
         trade.draw(window);
-
+		//*****************************************************************************************budowanie w setupie
         if (setupPhase) {
             players.push_back(bank);
             sf::Text setupText;
@@ -650,7 +650,7 @@ void Game::render() {
             setupText.setPosition(window.getSize().x / 2.f - setupText.getLocalBounds().width / 2.f, 10.f);
             window.draw(setupText);
 
-            // FIX: Draw buildButtons for both steps
+         
             if (setupStep == 0 || setupStep == 1) {
                 for (const auto& btn : buildButtons)
                     btn->draw(window);
@@ -717,7 +717,7 @@ void Game::render() {
     }
     window.display();
 }
-
+//*****************************************************************************************przyciskoza
 void Game::setupPlayerButtons() {
     playerButtons.clear();
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Buduj korytarz", sf::Vector2f(30, 350), [&]() {
@@ -746,7 +746,7 @@ void Game::setupPlayerButtons() {
     }));
     playerButtons.push_back(std::make_unique<SimpleButton>(font, "Kolejna tura", sf::Vector2f(30, 590), [&]() {
         if (!turnManager.getPlayers().empty() && !turnManager.getCurrentPlayer().hasRolled()) {
-            std::string logMsg = "Najpierw rzuć kostką!";
+            std::string logMsg = "Najpierw rzuc kostka!";
             std::thread([this, logMsg]() {
                 std::lock_guard<std::mutex> lock(logsMutex);
                 logs.add(logMsg);
@@ -772,7 +772,7 @@ void Game::setupPlayerButtons() {
             auto& player = turnManager.getCurrentPlayer();
             std::string cardName = cardManager.buyCardWithMessage(player);
             if (!cardName.empty()) {
-                std::string logMsg = "Gracz " + std::to_string(player.getId() + 1) + " zakupił kartę. Karta to: " + cardName;
+                std::string logMsg = "Gracz " + std::to_string(player.getId() + 1) + " zakupil karte: " + cardName;
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);

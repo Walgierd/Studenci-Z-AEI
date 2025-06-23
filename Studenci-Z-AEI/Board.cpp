@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include <ranges>
 
 std::vector<sf::Vector2f> g_hexCenters;
 
@@ -54,12 +55,12 @@ std::vector<ResourceType> Board::shuffledResources() {
     return resources;
 }
 
-std::vector<int> Board::shuffledNumbers() {
+std::vector<int> Board::shuffledNumbers() {//ranges
+    auto base = std::views::iota(2, 12);
     std::vector<int> numbers;
-    for (int i = 2; i <= 12; ++i) {
-        if (i == 12) continue; 
-        numbers.push_back(i);
-        numbers.push_back(i);
+    for (int n : base) {
+        numbers.push_back(n);
+        numbers.push_back(n);
     }
 
     std::random_device rd;

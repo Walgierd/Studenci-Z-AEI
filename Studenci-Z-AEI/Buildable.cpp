@@ -186,7 +186,7 @@ void initializeBuildButtons(
 
     if (buildMode == BuildMode::Settlement) {
         for (const auto& pos : settlementSpots) {
-            // Sprawdź czy w tym miejscu już jest budynek
+    
             bool occupied = false;
             for (const auto& b : buildables) {
                 if (auto* s = dynamic_cast<Settlement*>(b.get())) {
@@ -198,7 +198,7 @@ void initializeBuildButtons(
             }
             if (!occupied) {
                 buildButtons.push_back(std::make_unique<SettlementSpotButton>(pos, [&](const sf::Vector2f& p) {
-                    // Callback może być pusty, bo obsługa jest w Game.cpp
+              
                 }));
             }
         }
@@ -206,11 +206,11 @@ void initializeBuildButtons(
 
     if (buildMode == BuildMode::Road) {
         for (const auto& edge : roadSpots) {
-            // Sprawdź czy na tej krawędzi już jest droga (niezależnie od właściciela)
+     
             bool occupied = false;
             for (const auto& b : buildables) {
                 if (auto* r = dynamic_cast<Road*>(b.get())) {
-                    // Porównaj oba końce z tolerancją
+          
                     bool same = (std::hypot(r->start.x - edge.first.x, r->start.y - edge.first.y) < 1.0f &&
                                  std::hypot(r->end.x - edge.second.x, r->end.y - edge.second.y) < 1.0f);
                     bool reverse = (std::hypot(r->start.x - edge.second.x, r->start.y - edge.second.y) < 1.0f &&
@@ -223,7 +223,7 @@ void initializeBuildButtons(
             }
             if (!occupied) {
                 buildButtons.push_back(std::make_unique<RoadSpotButton>(edge.first, edge.second, [&](const sf::Vector2f& a, const sf::Vector2f& b) {
-                    // Callback może być pusty, bo obsługa jest w Game.cpp
+          
                 }));
             }
         }
@@ -240,13 +240,13 @@ bool tryBuildSettlement(
     bool setupPhase,
     Logs* logs
 ) {
-    // Sprawdź odległość od innych akademików
+
     if (!isSettlementFarEnough(buildables, pos, minDist)) {
         if (logs) logs->add("Za blisko innego akademika!");
         return false;
     }
 
-    // Policz ile akademików ma gracz (przed próbą budowy)
+
     int playerSettlements = 0;
     std::vector<sf::Vector2f> playerSettlementPositions;
     for (const auto& b : buildables) {
@@ -258,7 +258,6 @@ bool tryBuildSettlement(
         }
     }
 
-    // Od trzeciego akademika wymagaj połączenia z dowolnym wcześniejszym
     if (playerSettlements >= 2) {
         bool connected = false;
         for (const auto& prevPos : playerSettlementPositions) {
@@ -268,13 +267,12 @@ bool tryBuildSettlement(
             }
         }
         if (!connected) {
-            if (logs) logs->add("Nowy akademik musi być połączony z jednym z Twoich wcześniejszych akademików!");
-            // NIE stawiaj akademika, pozwól graczowi wybrać inne miejsce
+            if (logs) logs->add("Nowy akademik musi być polaczony z jednym z Twoich wczesniejszych akademikow!");
+   
             return false;
         }
     }
 
-    // Sprawdź zasoby lub fazę setup
     if (setupPhase ||
         (players[currentPlayer].getResourceCount(ResourceType::Pizza) >= 1 &&
             players[currentPlayer].getResourceCount(ResourceType::Piwo) >= 1 &&
@@ -291,9 +289,9 @@ bool tryBuildSettlement(
         buildables.push_back(std::move(settlement));
         freeBuildSettlement = false;
 
-        // --- PORT BONUS: assign port to player if adjacent ---
+   
         for (const auto& port : HexTile::ports) {
-            if (std::hypot(port.pos.x - pos.x, port.pos.y - pos.y) < 20.f) { // adjust threshold as needed
+            if (std::hypot(port.pos.x - pos.x, port.pos.y - pos.y) < 20.f) { 
                 players[currentPlayer].addPort(port.type);
             }
         }
@@ -302,7 +300,7 @@ bool tryBuildSettlement(
         return true;
     }
     else {
-        if (logs) logs->add("Brak zasobów do budowy akademika!");
+        if (logs) logs->add("Brak zasobow do budowy akademika!");
     }
     return false;
 }
@@ -318,7 +316,7 @@ bool tryBuildRoad(
     const sf::Vector2f& lastSettlementPos,
     Logs* logs
 ) {
-    // Dodaj sprawdzenie czy droga już istnieje
+
     for (const auto& b : buildables) {
         if (auto* r = dynamic_cast<Road*>(b.get())) {
             bool same = (std::hypot(r->start.x - start.x, r->start.y - start.y) < 1.0f &&
@@ -360,11 +358,11 @@ bool tryBuildRoad(
             return true;
         }
         else {
-            if (logs) logs->add("Brak zasobów do budowy korytarza!");
+            if (logs) logs->add("Brak zasobow do budowy korytarza!");
         }
     }
     else {
-        if (logs) logs->add("Korytarz musi być połączony z Twoją infrastrukturą!");
+        if (logs) logs->add("Korytarz musi być polaczony z Twoja infrastruktura!");
     }
     return false;
 }
