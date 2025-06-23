@@ -42,9 +42,7 @@ std::string CardManager::buyCardWithMessage(Player& player) {
         }
     });
 
-    // Możesz wykonywać inne operacje tutaj, jeśli są niezależne...
 
-    // Pobierz wynik (blokuje tylko do momentu uzyskania wyniku)
     std::unique_ptr<Card> card = futureCard.get();
     if (!card) return "";
 
@@ -59,7 +57,7 @@ void CardManager::showCards(sf::RenderWindow& window, const sf::Font& font, Play
     float y = 200.f;
     int visibleIdx = 1;
 
-    // Użycie ranges do filtrowania kart (pomijamy VictoryPoint)
+
     for (const auto& card : cards | std::views::filter([](const auto& c) { return c->type != CardType::VictoryPoint; })) {
         sf::Text text;
         text.setFont(font);
@@ -97,11 +95,7 @@ void CardManager::useCard(
     }
 
     auto& card = it->second[idx];
-    if (player.hasUsedCardThisTurn()) {
-        Logs logs(sf::Font(), 10); 
-        logs.add("Gracz użył już karty w tej turze.");
-        return;
-    }
+   
 
 
     if (card->type == CardType::FreeRoad) {

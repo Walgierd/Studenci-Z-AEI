@@ -1,12 +1,14 @@
 ﻿#include "Game.h"
 #include <thread>
 #include <mutex>
+#include <SFML/Window.hpp> // Dodaj na górze jeśli nie masz
+#include <ranges> // dodaj na górze pliku
 
 Game::Game()
     : window(sf::VideoMode(1920, 1080), "Studenci z AEI", sf::Style::Default),
     currentStyle(sf::Style::Default),
     menu(1920, 1080),
-    score(), // (or wherever your Score object is)
+    score(), 
     playerUI(font, &score),
     inMenu(true),
     hexSize(80.f),
@@ -24,17 +26,17 @@ Game::Game()
     bank(-1)
 {
     if (!std::filesystem::exists("Fonts/arial.ttf") || !font.loadFromFile("Fonts/arial.ttf")) {
-        throw std::runtime_error("Brak czcionki Fonts/arial.ttf");
+        throw std::runtime_error("Brak czcionki ");
     }
     knight.setPosition(static_cast<int>(board.getTiles().size() / 2));
     setupPlayerButtons();
     lastSettlementPos.resize(4, sf::Vector2f(-1000, -1000));
 
-    // Dodaj bank do wektora graczy
-    players.push_back(bank);
+ 
+	players.push_back(bank);//bank dodawany do graczy z id-1, aby uniknąć problemów z indeksowaniem
 
-    // --- DODAJ TO: inicjalizacja portów ---
-    std::vector<sf::Vector2f> hexCenters;
+    
+    std::vector<sf::Vector2f> hexCenters;//portyyy
     for (const auto& tile : board.getTiles())
         hexCenters.push_back(tile.getPosition());
     HexTile::setupPorts(hexCenters, hexSize);
@@ -96,20 +98,20 @@ void Game::handleGameEvents(const sf::Event& event) {
         auto& players = turnManager.getPlayers();
         int currentPlayer = turnManager.getCurrentPlayerIndex();
 
-        // Dice button definition
-        sf::RectangleShape diceButton(sf::Vector2f(120, 50));
+  
+        sf::RectangleShape diceButton(sf::Vector2f(120, 50));//rectangle shape jest do kostki
         diceButton.setPosition(static_cast<float>(window.getSize().x) - 180.f, 300.f);
         bool diceClicked = diceButton.getGlobalBounds().contains(mousePos);
 
-        // Block further dice rolls if already rolled
-        if (diceClicked) {
+      
+        if (diceClicked) {// jeden roll na ture
             if (players[currentPlayer].hasRolled()) {
                 std::string logMsg = "Już rzuciłeś kostką w tej turze!";
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);
                 }).detach();
-                return; // Prevent further actions
+                return; 
             }
 
             auto received = handleDiceRollWithLog(players, currentPlayer, board, buildables, knight, hexSize);
@@ -119,7 +121,7 @@ void Game::handleGameEvents(const sf::Event& event) {
             int d2 = players[currentPlayer].getDice2();
 
             {
-                std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " rzucił kostką, wypadło " + std::to_string(d1 + d2);
+                std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " rzuca kostka, wypadlo " + std::to_string(d1 + d2);
                 std::thread([this, logMsg]() {
                     std::lock_guard<std::mutex> lock(logsMutex);
                     logs.add(logMsg);
@@ -150,7 +152,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 }).detach();
             }
 
-            if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {
+            if (players[currentPlayer].getDice1() + players[currentPlayer].getDice2() == 12) {//złodziej przy wyrzuceniu 12
                 knightMoveMode = true;
                 knightMoveButtons.clear();
                 const auto& tiles = board.getTiles();
@@ -166,7 +168,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                     ));
                 }
             }
-            return; // Prevent other actions after dice roll
+            return; 
         }
 
         if (setupPhase) {
@@ -244,9 +246,9 @@ void Game::handleGameEvents(const sf::Event& event) {
             return;
         }
 
-        // Wymuś rzut kostką przed innymi akcjami (poza rzutem)
-        if (!players[currentPlayer].hasRolled()) {
-            std::string logMsg = "Najpierw rzuć kostką!";
+       
+        if (!players[currentPlayer].hasRolled()) {//rzut kostką przed innymi akcjami
+            std::string logMsg = "Najpierw rzuc kostka!";
             std::thread([this, logMsg]() {
                 std::lock_guard<std::mutex> lock(logsMutex);
                 logs.add(logMsg);
@@ -254,7 +256,7 @@ void Game::handleGameEvents(const sf::Event& event) {
             return;
         }
 
-        if (trade.exchangeMode) {
+        if (trade.exchangeMode) {//kliknięcia
             trade.handleClick(mousePos, players, currentPlayer);
             return;
         }
@@ -268,6 +270,7 @@ void Game::handleGameEvents(const sf::Event& event) {
         if (cardManager.buyCardButton->isClicked(mousePos)) cardManager.buyCardButton->onClick();
         if (cardManager.showCardsButton->isClicked(mousePos)) cardManager.showCardsButton->onClick();
 
+		//*****************************************************************************************budowa akademików
         if (buildMode == BuildMode::Settlement) {
             std::vector<sf::Vector2f> hexCenters;
             for (const auto& tile : board.getTiles())
@@ -287,6 +290,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 }
             }
         }
+        //*****************************************************************************************budowa dróg
         else if (buildMode == BuildMode::Road) {
             std::vector<sf::Vector2f> hexCenters;
             for (const auto& tile : board.getTiles())
@@ -314,6 +318,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 }
             }
         }
+        //*****************************************************************************************budowa kampusów
         else if (buildMode == BuildMode::City) {
             if (tryBuildCity(buildables, players, currentPlayer, mousePos)) {
                 std::string logMsg = "Gracz " + std::to_string(players[currentPlayer].getId() + 1) + " buduje kampus";
@@ -324,7 +329,7 @@ void Game::handleGameEvents(const sf::Event& event) {
                 buildMode = BuildMode::None;
             }
         }
-
+        //*****************************************************************************************pokazywanie kart
         if (cardManager.cardsVisible && !turnManager.getPlayers().empty()) {
             int currentPlayerId = turnManager.getCurrentPlayer().getId();
             auto& playerCardsMap = cardManager.getPlayerCards();
@@ -335,11 +340,32 @@ void Game::handleGameEvents(const sf::Event& event) {
                 float cardPanelY = 400.f;
                 float cardWidth = 400.f;
                 float cardHeight = 40.f;
-                for (size_t i = 0; i < cards.size(); ++i) {
-                    sf::FloatRect cardRect(cardPanelX, cardPanelY + i * (cardHeight + 10.f), cardWidth, cardHeight);
+                int visibleIdx = 0;
+                int clickedIdx = -1;
+                for (const auto& card : cards | std::views::filter([](const auto& c) { return c->type != CardType::VictoryPoint; })) {
+                    sf::FloatRect cardRect(cardPanelX, cardPanelY + visibleIdx * (cardHeight + 10.f), cardWidth, cardHeight);
                     if (cardRect.contains(mousePos)) {
+                        clickedIdx = visibleIdx;
+                        break;
+                    }
+                    ++visibleIdx;
+                }
+                if (clickedIdx != -1) {
+                    // Znajdź faktyczny indeks karty w oryginalnym wektorze (bo clickedIdx to indeks widocznych, nie w oryginalnym wektorze!)
+                    int realIdx = -1;
+                    int count = 0;
+                    for (size_t i = 0; i < cards.size(); ++i) {
+                        if (cards[i]->type == CardType::VictoryPoint) continue;
+                        if (count == clickedIdx) {
+                            realIdx = static_cast<int>(i);
+                            break;
+                        }
+                        ++count;
+                    }
+                    if (realIdx != -1) {
+                        // Dodaj log przed wywołaniem useCard, jeśli gracz już użył kartę
                         if (turnManager.getCurrentPlayer().hasUsedCardThisTurn()) {
-                            std::string logMsg = "Możesz użyć tylko jednej karty na turę!";
+                            std::string logMsg = "Nie możesz użyć więcej niż 1 karty w tej turze!";
                             std::thread([this, logMsg]() {
                                 std::lock_guard<std::mutex> lock(logsMutex);
                                 logs.add(logMsg);
@@ -347,40 +373,22 @@ void Game::handleGameEvents(const sf::Event& event) {
                             return;
                         }
                         cardManager.useCard(
-                            i,
+                            static_cast<size_t>(realIdx),
                             turnManager.getCurrentPlayer(),
                             buildables,
                             board,
                             knight,
-                            turnManager.getPlayers(),
+                            players,
                             buildMode,
                             buildButtons,
                             window,
                             hexSize,
-                            turnManager.getCurrentPlayerIndex(),
+                            currentPlayer,
                             freeBuildRoad,
                             freeBuildSettlement,
                             knightMoveMode,
                             knightMoveButtons
                         );
-
-                        if (freeBuildRoad) {
-                            buildMode = BuildMode::Road;
-                            buildButtons.clear();
-                            initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, turnManager.getPlayers(), turnManager.getCurrentPlayerIndex(), window);
-                        }
-                        if (freeBuildSettlement) {
-                            buildMode = BuildMode::Settlement;
-                            buildButtons.clear();
-                            initializeBuildButtons(buildButtons, buildables, board, hexSize, buildMode, turnManager.getPlayers(), turnManager.getCurrentPlayerIndex(), window);
-                        }
-
-                        turnManager.getCurrentPlayer().setUsedCardThisTurn(true);
-                        std::string logMsg = "Gracz " + std::to_string(turnManager.getCurrentPlayer().getId() + 1) + " użył karty.";
-                        std::thread([this, logMsg]() {
-                            std::lock_guard<std::mutex> lock(logsMutex);
-                            logs.add(logMsg);
-                        }).detach();
                         return;
                     }
                 }
@@ -402,11 +410,65 @@ void Game::update() {
     }
     score.updateScores(players, buildables, victoryPoints);
 
+    
+    int winnerId = -1;
+    for (const auto& player : players) {
+        if (score.getScore(player.getId()) >= 15) {//WARUNEK ZWYCIĘZTWA(standard -15) <-------------------------------------------
+            winnerId = player.getId();
+            break;
+        }
+    }
+    //GAME OVER
+    static bool gameOver = false;
+    if (winnerId != -1 && !gameOver) {
+        gameOver = true;
+      
+        sf::RenderWindow endWindow(sf::VideoMode(1000, 250), "Koniec gry", sf::Style::Titlebar | sf::Style::Close);
+        sf::Font endFont;
+        endFont.loadFromFile("Fonts/pixel.ttf");
+        sf::Text endText;
+        endText.setFont(endFont);
+        endText.setString("Koniec gry! Gracz " + std::to_string(winnerId + 1) + " wygrywa.\nKliknij, aby wrócić do menu.");
+        endText.setCharacterSize(32);
+        endText.setFillColor(sf::Color::Red);
+        endText.setStyle(sf::Text::Bold);
+        endText.setPosition(30, 60);
+
+        while (endWindow.isOpen()) {
+            sf::Event event;
+            while (endWindow.pollEvent(event)) {
+                if (event.type == sf::Event::Closed || event.type == sf::Event::MouseButtonPressed) {
+                    endWindow.close();
+                }
+            }
+            endWindow.clear(sf::Color::Black);
+            endWindow.draw(endText);
+            endWindow.display();
+        }
+
+        //powrót do menu
+        inMenu = true;
+        buildables.clear();
+        turnManager.initialize(menu.getSelectedPlayerCount());
+        setupPhase = true;
+        setupTurn = 0;
+        setupStep = 0;
+        setupPlayerIndex = 0;
+        buildButtons.clear();
+        playerButtons.clear();
+        lastSettlementPos.assign(4, sf::Vector2f(-1000, -1000));
+        score = Score();
+        cardManager = CardManager();
+        setupPlayerButtons();
+        gameOver = false;
+        return;
+    }
+
     std::vector<Player> scoringPlayers;
     for (const auto& p : turnManager.getPlayers()) {
         if (p.getId() >= 0) scoringPlayers.push_back(p);
     }
-
+    //*****************************************************************************************pierwsza tura
     if (setupPhase) {
         if (setupStep == 0 && buildButtons.empty()) {
             buildButtons.clear();
@@ -497,8 +559,8 @@ void Game::render() {
     else {
         board.draw(window);
 
-        // --- DODAJ TO: rysowanie portów ---
-        HexTile::drawPorts(window);
+       
+        HexTile::drawPorts(window);//rys porty
 
         {
             std::lock_guard<std::mutex> lock(buildMutex);
@@ -620,7 +682,7 @@ void Game::render() {
             window.draw(buildInfo);
         }
 
-        // --- Wyświetlanie kart gracza po prawej stronie ---
+		// wyświetlanie kart
         if (cardManager.cardsVisible && !turnManager.getPlayers().empty()) {
             int currentPlayerId = turnManager.getCurrentPlayer().getId();
             const auto& playerCardsMap = cardManager.getPlayerCards();
@@ -631,9 +693,8 @@ void Game::render() {
                 float cardPanelY = 400.f;
                 float cardWidth = 400.f;
                 float cardHeight = 40.f;
-                int visibleIdx = 0;
-                for (size_t i = 0; i < cards.size(); ++i) {
-                    if (cards[i]->type == CardType::VictoryPoint) continue; // NIE pokazuj kart punktów zwycięstwa
+                int visibleIdx = 0; // Declare and initialize visibleIdx
+                for (const auto& card : cards | std::views::filter([](const auto& c) { return c->type != CardType::VictoryPoint; })) {
                     sf::RectangleShape cardRect(sf::Vector2f(cardWidth, cardHeight));
                     cardRect.setPosition(cardPanelX, cardPanelY + visibleIdx * (cardHeight + 10.f));
                     cardRect.setFillColor(sf::Color(60, 60, 120, 200));
@@ -643,7 +704,7 @@ void Game::render() {
 
                     sf::Text cardText;
                     cardText.setFont(font);
-                    cardText.setString(cards[i]->getName());
+                    cardText.setString(card->getName());
                     cardText.setCharacterSize(24);
                     cardText.setFillColor(sf::Color::White);
                     cardText.setPosition(cardPanelX + 10.f, cardPanelY + visibleIdx * (cardHeight + 10.f) + 5.f);
