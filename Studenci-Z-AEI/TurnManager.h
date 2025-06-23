@@ -14,11 +14,10 @@ public:
     Player& getCurrentPlayer();
     const Player& getCurrentPlayer() const;
     int getCurrentPlayerIndex() const;
-    int getTurnCounter() const;
     void nextTurn();
     std::vector<Player>& getPlayers();
     const std::vector<Player>& getPlayers() const;
-    void giveTestResourcesToAll();
+
 
 private:
     std::vector<Player> players;

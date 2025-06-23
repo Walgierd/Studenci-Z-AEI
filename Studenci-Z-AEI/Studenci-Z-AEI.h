@@ -13,5 +13,16 @@
 #include "UIButton.h"
 #include "Menago.h"
 #include "Game.h"
+#include <memory>
+#include <vector>
+#include <filesystem>
+#include <functional>
+#include <ranges>
+#include <cmath>
+#include <thread>
+#include <mutex>
+#include <array>
+#include <iostream>
+#include <map>
+#include <SFML/Window.hpp>
 
-#include "Libraries.h"

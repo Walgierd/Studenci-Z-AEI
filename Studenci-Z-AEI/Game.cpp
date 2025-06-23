@@ -92,7 +92,7 @@ void Game::handleMenuEvents(const sf::Event& event) {
                 players[i].setNickname(nick);
             }
             for (auto& player : players) {
-                player.addResource(ResourceType::Pizza, 10);
+                player.addResource(ResourceType::Pizza, 10);//<-------------------------------------------zasoby na pokaz
                 player.addResource(ResourceType::Piwo, 10);
                 player.addResource(ResourceType::Notatki, 10);
                 player.addResource(ResourceType::Kawa, 10);

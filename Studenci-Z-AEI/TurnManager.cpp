@@ -31,9 +31,7 @@ int TurnManager::getCurrentPlayerIndex() const {
     return currentPlayerIndex;
 }
 
-int TurnManager::getTurnCounter() const {
-    return turnCounter;
-}
+
 
 void TurnManager::nextTurn() {
     currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
@@ -51,10 +49,3 @@ const std::vector<Player>& TurnManager::getPlayers() const {
     return players;
 }
 
-void TurnManager::giveTestResourcesToAll() {
-    for (auto& player : players) {
-        for (int resourceType = 0; resourceType < static_cast<int>(ResourceType::COUNT); ++resourceType) {
-            player.addResource(static_cast<ResourceType>(resourceType), 10);
-        }
-    }
-}
