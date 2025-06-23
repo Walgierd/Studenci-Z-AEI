@@ -7,25 +7,25 @@
 #include "HexTile.h"
 
 
-// Klasa Rycerza
+
 class Knight {
 public:
-    // Indeks hexa, na którym stoi rycerz
+    
     int tileIndex = -1;
 
-    // Ustaw rycerza na danym polu (indeks w Board::tiles)
+    
     void setPosition(int idx);
 
-    // Zwraca pozycję rycerza (środek hexa)
+  
     sf::Vector2f getPosition(const std::vector<HexTile>& tiles) const;
 
-    // Rysowanie czarnego trójkąta na środku hexa
+  
     void draw(sf::RenderWindow& window, const std::vector<HexTile>& tiles, float hexSize) const;
 
-    // Czy rycerz blokuje dany hex?
+ 
     bool blocksTile(int idx) const;
 
-    // Nowe metody:
+  
     void startMoveMode(
         std::vector<std::unique_ptr<BuildSpotButton>>& knightMoveButtons,
         const std::vector<HexTile>& tiles,
@@ -40,8 +40,8 @@ public:
     );
 };
 
-// Przycisk do przestawiania rycerza (okrągły, jak do budowy)
-struct KnightMoveButton : public BuildSpotButton {
+
+struct KnightMoveButton : public BuildSpotButton {//przycisk dla rycerza na środek hexa
     int tileIdx;
     std::function<void(int)> moveCallback;
     KnightMoveButton(const sf::Vector2f& p, int idx, std::function<void(int)> cb);

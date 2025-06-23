@@ -5,13 +5,13 @@
 #include"Game.h"
 
 
-// Mutex do synchronizacji logów w Trade.cpp
+
 std::mutex tradeLogsMutex;
 
 void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int currentPlayer, Logs* logs) {
-    playersPtr = &players; // zapamiętaj wskaźnik
+    playersPtr = &players;
     exchangeMode = true;
-    exchangeTargetPlayer = -1; // Default: no exchange target
+    exchangeTargetPlayer = -1; 
     exchangeGive.clear();
     exchangeGet.clear();
     exchangeButtons.clear();
@@ -38,7 +38,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                     font,
                     std::string("Daj 0 ") + resourceName(t),
                     sf::Vector2f(600, by),
-                    [](){} // tymczasowy pusty callback
+                    [](){} 
                 );
                 auto* giveBtnRaw = giveBtn.get();
                 giveBtn->setCallback([this, t, giveBtnRaw]() mutable {
@@ -52,7 +52,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                     font,
                     std::string("Wez 0 ") + resourceName(t),
                     sf::Vector2f(900, by),
-                    [](){} // tymczasowy pusty callback
+                    [](){} 
                 );
                 auto* wezBtnRaw = wezBtn.get();
                 wezBtn->setCallback([this, t, wezBtnRaw]() mutable {
@@ -71,7 +71,7 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                     bool canGive = true, canGet = true;
                     std::string errorMsg;
 
-                    // Sprawdź czy to wymiana z bankiem
+                    // do banku
                     if (players[exchangeTargetPlayer].getId() == -1) {
                         int giveCount = 0, getCount = 0;
                         ResourceType giveType = ResourceType::Kawa, getType = ResourceType::Kawa;

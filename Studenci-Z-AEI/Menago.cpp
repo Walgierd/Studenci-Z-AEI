@@ -1,7 +1,7 @@
 ﻿
 #include "Menago.h"
 
-//usunięte i przenisione do turnmanager bo łatwiej się pisało
+//usunięte i przenisione do turnmanager w game bo łatwiej się pisało
 
 
 std::map<int, std::map<ResourceType, int>> handleDiceRollWithLog(

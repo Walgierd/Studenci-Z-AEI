@@ -13,7 +13,7 @@
 
 struct TradeUI {
     bool exchangeMode = false;
-    int exchangeTargetPlayer = -1; // Bank jako gracz ma ID -1
+    int exchangeTargetPlayer = -1; //BANK MA ID -1 NIE ZMIENIAĆ
     std::map<ResourceType, int> exchangeGive;
     std::map<ResourceType, int> exchangeGet;
     std::vector<std::unique_ptr<UIButton>> exchangeButtons;

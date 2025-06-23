@@ -12,8 +12,8 @@ void PlayerUI::draw(const Player& player, sf::RenderWindow& window, float x, flo
 
     float resourceY = y + 36.f;
 
-    // Punkty jako pierwszy wiersz tabeli
-    sf::Text scoreText;
+   
+    sf::Text scoreText;//punkty
     scoreText.setFont(font);
     scoreText.setCharacterSize(28);
     scoreText.setFillColor(sf::Color::Yellow);

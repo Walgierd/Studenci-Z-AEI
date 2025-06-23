@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 
-// SimpleButton implementation
+//one klasa to dziedziczyć all
 class SimpleButton : public UIButton {
 public:
     SimpleButton(const sf::Font& font, const std::string& text, sf::Vector2f pos, std::function<void()> callback);

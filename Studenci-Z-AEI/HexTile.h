@@ -9,8 +9,8 @@
 #include <future>
 
 enum class PortType {
-    Generic,    // 3:1
-    Kawa,       // 2:1
+    Generic,    
+    Kawa,      
     Piwo,
     Notatki,
     Pizza,
@@ -18,12 +18,12 @@ enum class PortType {
 };
 
 struct Port {
-    sf::Vector2f edgeStart; // początek krawędzi portu
-    sf::Vector2f edgeEnd;   // koniec krawędzi portu
-    sf::Vector2f pos;       // środek krawędzi (do rysowania)
+    sf::Vector2f edgeStart; 
+    sf::Vector2f edgeEnd;   
+    sf::Vector2f pos;       
     PortType type;
     std::string label;
-    float angle; // do rysowania L-ki
+    float angle; // no prawie elka
 
     Port(const sf::Vector2f& a, const sf::Vector2f& b, PortType t)
         : edgeStart(a), edgeEnd(b), pos((a + b) / 2.f), type(t)
@@ -63,7 +63,7 @@ private:
     int number;
 };
 
-// Declaration of getEdgeVertexIndices function
+
 std::vector<int> getEdgeVertexIndices(const std::vector<sf::Vector2f>& settlementSpots, const std::vector<sf::Vector2f>& hexCenters, float hexSize);
 
 
