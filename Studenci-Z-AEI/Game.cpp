@@ -1,8 +1,8 @@
 ﻿#include "Game.h"
 #include <thread>
 #include <mutex>
-#include <SFML/Window.hpp> // Dodaj na górze jeśli nie masz
-#include <ranges> // dodaj na górze pliku
+#include <SFML/Window.hpp> 
+#include <ranges> 
 
 Game::Game()
     : window(sf::VideoMode(1920, 1080), "Studenci z AEI", sf::Style::Default),
@@ -184,27 +184,16 @@ void Game::handleGameEvents(const sf::Event& event) {
                 if (buildButtons.empty()) {
                     buildButtons.clear();
                     for (const auto& pos : settlementSpots) {
-                        bool occupied = false;
-                        for (const auto& b : buildables) {
-                            if (auto* s = dynamic_cast<Settlement*>(b.get())) {
-                                if (std::hypot(s->pos.x - pos.x, s->pos.y - pos.y) < 1.0f) {
-                                    occupied = true;
-                                    break;
-                                }
+                        buildButtons.push_back(std::make_unique<SettlementSpotButton>(pos, [this, pos](const sf::Vector2f&) {
+                            bool freeBuildSettlementTemp = true;
+                            auto& players = turnManager.getPlayers();
+                            int currentPlayer = setupPlayerIndex;
+                            if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
+                                lastSettlementPos[currentPlayer] = pos;
+                                setupStep = 1;
+                                buildButtons.clear();
                             }
-                        }
-                        if (!occupied) {
-                            buildButtons.push_back(std::make_unique<SettlementSpotButton>(pos, [this, pos](const sf::Vector2f&) {
-                                bool freeBuildSettlementTemp = true;
-                                auto& players = turnManager.getPlayers();
-                                int currentPlayer = setupPlayerIndex;
-                                if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
-                                    lastSettlementPos[currentPlayer] = pos;
-                                    setupStep = 1;
-                                    buildButtons.clear();
-                                }
-                            }));
-                        }
+                        }));
                     }
                 }
 
@@ -477,27 +466,16 @@ void Game::update() {
                 hexCenters.push_back(tile.getPosition());
             auto settlementSpots = getUniqueHexVertices(hexCenters, hexSize);
             for (const auto& pos : settlementSpots) {
-                bool occupied = false;
-                for (const auto& b : buildables) {
-                    if (auto* s = dynamic_cast<Settlement*>(b.get())) {
-                        if (std::hypot(s->pos.x - pos.x, s->pos.y - pos.y) < 1.0f) {
-                            occupied = true;
-                            break;
-                        }
+                buildButtons.push_back(std::make_unique<SettlementSpotButton>(pos, [this, pos](const sf::Vector2f&) {
+                    bool freeBuildSettlementTemp = true;
+                    auto& players = turnManager.getPlayers();
+                    int currentPlayer = setupPlayerIndex;
+                    if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
+                        lastSettlementPos[currentPlayer] = pos;
+                        setupStep = 1;
+                        buildButtons.clear();
                     }
-                }
-                if (!occupied) {
-                    buildButtons.push_back(std::make_unique<SettlementSpotButton>(pos, [this, pos](const sf::Vector2f&) {
-                        bool freeBuildSettlementTemp = true;
-                        auto& players = turnManager.getPlayers();
-                        int currentPlayer = setupPlayerIndex;
-                        if (tryBuildSettlement(buildables, players, currentPlayer, pos, hexSize * std::sqrt(3.f) - 5, freeBuildSettlementTemp, true, &logs)) {
-                            lastSettlementPos[currentPlayer] = pos;
-                            setupStep = 1;
-                            buildButtons.clear();
-                        }
-                    }));
-                }
+                }));
             }
         }
         if (setupStep == 1 && buildButtons.empty()) {

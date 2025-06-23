@@ -1,4 +1,6 @@
 ﻿#include "Buildable.h"
+#include <filesystem>
+#include <ranges>
 
 void Road::draw(sf::RenderWindow& window) const {
     sf::RectangleShape shape;
@@ -10,7 +12,14 @@ void Road::draw(sf::RenderWindow& window) const {
     window.draw(shape);
 
     static sf::Font font;
-    static bool loaded = font.loadFromFile("Fonts/arial.ttf");
+    static bool loaded = false;
+    static bool checked = false;
+    if (!checked) {
+        if (std::filesystem::exists("Fonts/arial.ttf")) {
+            loaded = font.loadFromFile("Fonts/arial.ttf");
+        }
+        checked = true;
+    }
     if (loaded) {
         sf::Text text(std::to_string(ownerId + 1), font, 12);
         text.setFillColor(sf::Color::White);
@@ -22,7 +31,14 @@ sf::Vector2f Road::getPosition() const { return (start + end) / 2.f; }
 
 void Settlement::draw(sf::RenderWindow& window) const {
     static sf::Font font;
-    static bool loaded = font.loadFromFile("Fonts/arial.ttf");
+    static bool loaded = false;
+    static bool checked = false;
+    if (!checked) {
+        if (std::filesystem::exists("Fonts/arial.ttf")) {
+            loaded = font.loadFromFile("Fonts/arial.ttf");
+        }
+        checked = true;
+    }
     if (isCity) {
         sf::RectangleShape rect(sf::Vector2f(32, 32));
         rect.setOrigin(16, 16);
@@ -137,31 +153,36 @@ std::vector<std::pair<sf::Vector2f, sf::Vector2f>> getUniqueHexEdges(const std::
 }
 
 bool isSettlementFarEnough(const std::vector<std::unique_ptr<Buildable>>& buildables, const sf::Vector2f& pos, float minDist) {
-    for (const auto& b : buildables) {
-        if (auto* s = dynamic_cast<Settlement*>(b.get())) {
-            if (std::hypot(s->pos.x - pos.x, s->pos.y - pos.y) < minDist)
-                return false;
-        }
+    auto settlements = buildables
+        | std::views::transform([](const auto& b) { return dynamic_cast<Settlement*>(b.get()); })
+        | std::views::filter([](auto* s) { return s != nullptr; });
+    for (auto* s : settlements) {
+        if (std::hypot(s->pos.x - pos.x, s->pos.y - pos.y) < minDist)
+            return false;
     }
     return true;
 }
 
 bool isRoadConnected(const std::vector<std::unique_ptr<Buildable>>& buildables, const sf::Vector2f& start, const sf::Vector2f& end, int playerId, float tolerance) {
-    for (const auto& b : buildables) {
-        if (auto* s = dynamic_cast<Settlement*>(b.get())) {
-            if (s->ownerId == playerId &&
-                (std::hypot(s->pos.x - start.x, s->pos.y - start.y) < tolerance ||
-                    std::hypot(s->pos.x - end.x, s->pos.y - end.y) < tolerance))
-                return true;
-        }
-        if (auto* r = dynamic_cast<Road*>(b.get())) {
-            if (r->ownerId == playerId &&
-                (std::hypot(r->start.x - start.x, r->start.y - start.y) < tolerance ||
-                    std::hypot(r->end.x - end.x, r->end.y - end.y) < tolerance ||
-                    std::hypot(r->start.x - end.x, r->start.y - end.y) < tolerance ||
-                    std::hypot(r->end.x - start.x, r->end.y - start.y) < tolerance))
-                return true;
-        }
+    auto settlements = buildables
+        | std::views::transform([](const auto& b) { return dynamic_cast<Settlement*>(b.get()); })
+        | std::views::filter([](auto* s) { return s != nullptr; });
+    for (auto* s : settlements) {
+        if (s->ownerId == playerId &&
+            (std::hypot(s->pos.x - start.x, s->pos.y - start.y) < tolerance ||
+             std::hypot(s->pos.x - end.x, s->pos.y - end.y) < tolerance))
+            return true;
+    }
+    auto roads = buildables
+        | std::views::transform([](const auto& b) { return dynamic_cast<Road*>(b.get()); })
+        | std::views::filter([](auto* r) { return r != nullptr; });
+    for (auto* r : roads) {
+        if (r->ownerId == playerId &&
+            (std::hypot(r->start.x - start.x, r->start.y - start.y) < tolerance ||
+             std::hypot(r->end.x - end.x, r->end.y - end.y) < tolerance ||
+             std::hypot(r->start.x - end.x, r->start.y - end.y) < tolerance ||
+             std::hypot(r->end.x - start.x, r->end.y - start.y) < tolerance))
+            return true;
     }
     return false;
 }
@@ -267,7 +288,7 @@ bool tryBuildSettlement(
             }
         }
         if (!connected) {
-            if (logs) logs->add("Nowy akademik musi być polaczony z jednym z Twoich wczesniejszych akademikow!");
+            if (logs) logs->add("Nowy akademik musi byc polaczony z jednym z Twoich wczesniejszych akademikow!");
    
             return false;
         }
@@ -362,7 +383,7 @@ bool tryBuildRoad(
         }
     }
     else {
-        if (logs) logs->add("Korytarz musi być polaczony z Twoja infrastruktura!");
+        if (logs) logs->add("Korytarz musi byc polaczony z Twoja infrastruktura!");
     }
     return false;
 }
@@ -373,9 +394,11 @@ bool tryBuildCity(
     int currentPlayer,
     const sf::Vector2f& pos
 ) {
-    for (auto& b : buildables) {
-        auto* s = dynamic_cast<Settlement*>(b.get());
-        if (s && !s->isCity && s->ownerId == players[currentPlayer].getId() &&
+    auto settlements = buildables
+        | std::views::transform([](const auto& b) { return dynamic_cast<Settlement*>(b.get()); })
+        | std::views::filter([](auto* s) { return s != nullptr; });
+    for (auto* s : settlements) {
+        if (!s->isCity && s->ownerId == players[currentPlayer].getId() &&
             std::hypot(s->pos.x - pos.x, s->pos.y - pos.y) < 40.f) {
             if (players[currentPlayer].getResourceCount(ResourceType::Kawa) >= 2 &&
                 players[currentPlayer].getResourceCount(ResourceType::Piwo) >= 2 &&
