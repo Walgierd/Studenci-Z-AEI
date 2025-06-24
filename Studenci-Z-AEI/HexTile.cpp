@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <numeric>
 #include <ranges>
+#include <filesystem> // dodane
 
 
 struct Vector2fPairLess {
@@ -20,7 +21,7 @@ struct Vector2fPairLess {
 std::vector<Port> HexTile::ports;
 std::map<ResourceType, sf::Texture> HexTile::textures;
 
-// dodałem ranges na laby
+
 static std::vector<sf::Vector2f> getOuterVertices(const std::vector<sf::Vector2f>& hexCenters, float hexSize, float epsilon = 1.0f) {
     auto vertices = getUniqueHexVertices(hexCenters, hexSize, epsilon);
     auto edges = getUniqueHexEdges(hexCenters, hexSize, epsilon);
@@ -75,7 +76,9 @@ void HexTile::loadTextures() {
     };
     for (const auto& [type, file] : textureFiles) {
         sf::Texture tex;
-        tex.loadFromFile(file);
+        if (std::filesystem::exists(file)) { 
+            tex.loadFromFile(file);
+        }
         textures[type] = std::move(tex);
     }
 }
@@ -103,7 +106,7 @@ void HexTile::setupPorts(const std::vector<sf::Vector2f>& hexCenters, float hexS
         PortType::Generic, PortType::Pizza, PortType::Generic, PortType::Kabel
     };
 
-    // srodek z ranges
+  
     sf::Vector2f center = std::accumulate(
         hexCenters.begin(), hexCenters.end(), sf::Vector2f(0, 0),
         [](const sf::Vector2f& acc, const sf::Vector2f& c) { return acc + c; }

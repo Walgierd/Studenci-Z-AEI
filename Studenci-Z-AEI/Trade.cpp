@@ -92,31 +92,31 @@ void TradeUI::startTrade(sf::Font& font, std::vector<Player>& players, int curre
                         }
                         if (giveCount != 1 || getCount != 1) {
                             canGet = false;
-                            if (logs) errorMsg += "Wymiana z bankiem: musisz dać dokładnie " + std::to_string(requiredGive) + " jednego typu i wziąć 1 innego typu. ";
+                            if (logs) errorMsg += "Wymiana z bankiem: musisz dac dokladnie " + std::to_string(requiredGive) + " jednego typu i wziąsc 1 innego typu. ";
                         }
                         if (exchangeGive[giveType] != requiredGive || exchangeGet[getType] != 1) {
                             canGet = false;
-                            if (logs) errorMsg += "Wymiana z bankiem: musisz dać " + std::to_string(requiredGive) + " za 1. ";
+                            if (logs) errorMsg += "Wymiana z bankiem: musisz dac " + std::to_string(requiredGive) + " za 1. ";
                         }
                         if (players[currentPlayer].getResourceCount(giveType) < requiredGive) {
                             canGive = false;
-                            if (logs) errorMsg += "Za mało surowca do wymiany z bankiem: " + resourceName(giveType) + ". ";
+                            if (logs) errorMsg += "Za malo surowca do wymiany z bankiem: " + resourceName(giveType) + ". ";
                         }
                     } else {
                         for (auto& [t, v] : exchangeGive) {
                             if (players[currentPlayer].getResourceCount(t) < v) {
                                 canGive = false;
                                 if (logs && v > 0)
-                                    errorMsg += "Za mało surowca: " + resourceName(t) + " (masz " +
+                                    errorMsg += "Za malo surowca: " + resourceName(t) + " (masz " +
                                         std::to_string(players[currentPlayer].getResourceCount(t)) +
-                                        ", próbujesz dać " + std::to_string(v) + "). ";
+                                        ", probujesz dac " + std::to_string(v) + "). ";
                             }
                         }
                         for (auto& [t, v] : exchangeGet) {
                             if (players[exchangeTargetPlayer].getResourceCount(t) < v) {
                                 canGet = false;
                                 if (logs && v > 0)
-                                    errorMsg += players[exchangeTargetPlayer].getNickname() + " ma za mało: " + resourceName(t) + ". ";
+                                    errorMsg += players[exchangeTargetPlayer].getNickname() + " ma za malo: " + resourceName(t) + ". ";
                             }
                         }
                     }
