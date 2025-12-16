@@ -1,17 +1,85 @@
-#include "HexTile.h"
+﻿#include "HexTile.h"
+#include "Buildable.h"
 #include <cmath>
 #include <string>
+#include <map>
+#include <algorithm>
+#include <numeric>
+#include <ranges>
+#include <filesystem> // dodane
+
+
+struct Vector2fPairLess {
+    bool operator()(const std::pair<sf::Vector2f, sf::Vector2f>& lhs, const std::pair<sf::Vector2f, sf::Vector2f>& rhs) const {
+        if (lhs.first.x != rhs.first.x) return lhs.first.x < rhs.first.x;
+        if (lhs.first.y != rhs.first.y) return lhs.first.y < rhs.first.y;
+        if (lhs.second.x != rhs.second.x) return lhs.second.x < rhs.second.x;
+        return lhs.second.y < rhs.second.y;
+    }
+};
+
+std::vector<Port> HexTile::ports;
+std::map<ResourceType, sf::Texture> HexTile::textures;
+
+
+static std::vector<sf::Vector2f> getOuterVertices(const std::vector<sf::Vector2f>& hexCenters, float hexSize, float epsilon = 1.0f) {
+    auto vertices = getUniqueHexVertices(hexCenters, hexSize, epsilon);
+    auto edges = getUniqueHexEdges(hexCenters, hexSize, epsilon);
+
+    std::vector<int> edgeCount(vertices.size(), 0);
+    for (const auto& edge : edges) {
+        for (size_t i = 0; i < vertices.size(); ++i) {
+            if (std::hypot(vertices[i].x - edge.first.x, vertices[i].y - edge.first.y) < epsilon ||
+                std::hypot(vertices[i].x - edge.second.x, vertices[i].y - edge.second.y) < epsilon) {
+                edgeCount[i]++;
+            }
+        }
+    }
+
+    
+    std::vector<sf::Vector2f> outerVertices;
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        if (edgeCount[i] == 2)
+            outerVertices.push_back(vertices[i]);
+    }
+    return outerVertices;
+}
 
 HexTile::HexTile(float x, float y, float size, ResourceType resource, int number)
     : resourceType(resource), position(x, y), hexSize(size), number(number)
 {
     setupHexShape(size);
     hexShape.setPosition(position);
-    switch (resourceType) {
-    case ResourceType::Kawa:    hexShape.setFillColor(sf::Color(139, 69, 19)); break;
-    case ResourceType::Energia: hexShape.setFillColor(sf::Color::Yellow); break;
-    case ResourceType::Notatki: hexShape.setFillColor(sf::Color::White); break;
-    default:                    hexShape.setFillColor(sf::Color(100, 100, 100)); break;
+
+    loadTextures();
+
+    auto it = textures.find(resourceType);
+    if (it != textures.end() && it->second.getSize().x > 0) {
+        hexShape.setTexture(&it->second);
+        hexShape.setFillColor(sf::Color::White);
+    } else {
+        hexShape.setFillColor(sf::Color(100, 100, 100));
+    }
+}
+
+void HexTile::loadTextures() {
+    static bool loaded = false;
+    if (loaded) return;
+    loaded = true;
+
+    const std::vector<std::pair<ResourceType, std::string>> textureFiles = {
+        {ResourceType::Pizza,    "Assets/pizza.png"},
+        {ResourceType::Kawa,     "Assets/kawa.png"},
+        {ResourceType::Piwo,     "Assets/piwo.png"},
+        {ResourceType::Notatki,  "Assets/notatki.png"},
+        {ResourceType::Kabel,    "Assets/kabel.png"}
+    };
+    for (const auto& [type, file] : textureFiles) {
+        sf::Texture tex;
+        if (std::filesystem::exists(file)) { 
+            tex.loadFromFile(file);
+        }
+        textures[type] = std::move(tex);
     }
 }
 
@@ -23,7 +91,42 @@ void HexTile::setupHexShape(float size) {
     }
 }
 
+void HexTile::setupPorts(const std::vector<sf::Vector2f>& hexCenters, float hexSize) {
+    ports.clear();
 
+    auto futureOuterVertices = std::async(std::launch::async, [&]() {//async na laby
+        return getOuterVertices(hexCenters, hexSize);
+    });
+
+    auto outerVertices = futureOuterVertices.get();
+
+    const int portCount = 9;
+    std::vector<PortType> portTypes = {
+        PortType::Kawa, PortType::Generic, PortType::Piwo, PortType::Generic, PortType::Notatki,
+        PortType::Generic, PortType::Pizza, PortType::Generic, PortType::Kabel
+    };
+
+  
+    sf::Vector2f center = std::accumulate(
+        hexCenters.begin(), hexCenters.end(), sf::Vector2f(0, 0),
+        [](const sf::Vector2f& acc, const sf::Vector2f& c) { return acc + c; }
+    );
+    center.x /= hexCenters.size();
+    center.y /= hexCenters.size();
+
+    // sortowanie z ranges
+    std::ranges::sort(outerVertices, [center](const sf::Vector2f& v1, const sf::Vector2f& v2) {
+        float a1 = std::atan2(v1.y - center.y, v1.x - center.x);
+        float a2 = std::atan2(v2.y - center.y, v2.x - center.x);
+        return a1 < a2;
+    });
+
+    for (int i = 0; i < portCount && i < static_cast<int>(outerVertices.size()); ++i) {
+        int idx = static_cast<int>(i * outerVertices.size() / float(portCount));
+        sf::Vector2f v = outerVertices[idx];
+        ports.emplace_back(v, v, portTypes[i]);
+    }
+}
 
 void HexTile::draw(sf::RenderWindow& window) const {
     window.draw(hexShape);
@@ -40,7 +143,12 @@ void HexTile::draw(sf::RenderWindow& window) const {
         static sf::Font font;
         static bool fontLoaded = false;
         if (!fontLoaded) {
-            fontLoaded = font.loadFromFile("Fonts/arial.ttf");
+            if (std::filesystem::exists("Fonts/arial.ttf")) {
+                fontLoaded = font.loadFromFile("Fonts/arial.ttf");
+            } else {
+                // nie chce mi się no wiadomo że czcionka będzie w plikach
+                return;
+            }
         }
         std::string numberStr = std::to_string(number);
         sf::Text text;
@@ -58,6 +166,54 @@ void HexTile::draw(sf::RenderWindow& window) const {
     }
 }
 
+void HexTile::drawPorts(sf::RenderWindow& window) {
+    static sf::Font font;
+    static bool fontLoaded = false;
+    if (!fontLoaded) {
+        if (std::filesystem::exists("Fonts/pixel.ttf")) {
+            fontLoaded = font.loadFromFile("Fonts/pixel.ttf");
+        } else {
+            // ditto
+            return;
+        }
+    }
+    for (const auto& port : ports) {
+        // miała być elka ale wyszedł ala mostek, imo może być
+        float mainLen = 40.f, mainThick = 12.f;
+        float legLen = 28.f, legThick = 12.f;
+
+
+        sf::RectangleShape base(sf::Vector2f(mainLen, mainThick));
+        base.setFillColor(sf::Color(80, 80, 80));
+        base.setOrigin(mainLen / 2.f, mainThick / 2.f);
+        base.setPosition(port.pos);
+        base.setRotation(port.angle);
+
+        sf::RectangleShape leg(sf::Vector2f(legThick, legLen));
+        leg.setFillColor(sf::Color(80, 80, 80));
+        float rad = port.angle * 3.14159265f / 180.f;
+        float dx = std::cos(rad) * (mainLen / 2.f - legThick / 2.f);
+        float dy = std::sin(rad) * (mainLen / 2.f - legThick / 2.f);
+        leg.setOrigin(legThick / 2.f, 0.f);
+        leg.setPosition(port.pos.x + dx, port.pos.y + dy);
+        leg.setRotation(port.angle + 90.f);
+
+        window.draw(base);
+        window.draw(leg);
+
+   
+        sf::Text text;
+        text.setFont(font);
+        text.setString(port.label);
+        text.setCharacterSize(18);
+		text.setFillColor(sf::Color::Yellow); // kolor portu
+        text.setStyle(sf::Text::Bold);
+        sf::FloatRect bounds = text.getLocalBounds();
+        text.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+        text.setPosition(port.pos.x, port.pos.y - 30);
+        window.draw(text);
+    }
+}
 
 ResourceType HexTile::getResourceType() const {
     return resourceType;

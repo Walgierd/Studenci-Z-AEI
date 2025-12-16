@@ -1,12 +1,13 @@
-#pragma once
+﻿#pragma once
 #include "HexTile.h"
 #include <vector>
 #include <random>
+#include "Drawable.h"
 
-class Board {
+class Board : public Drawable {
 public:
     Board(float hexSize, sf::Vector2f center);
-    void draw(sf::RenderWindow& window) const;
+    void draw(sf::RenderWindow& window) const override;
     const std::vector<HexTile>& getTiles() const;
 
 private:

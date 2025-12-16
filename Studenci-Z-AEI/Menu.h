@@ -1,17 +1,31 @@
-#pragma once
-#include <SFML/Graphics.hpp>
+﻿#pragma once
 
-class Menu {
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include <string>
+#include <functional>
+#include <regex>
+#include "Drawable.h"
+#include <filesystem>
+
+class Menu : public Drawable {
 public:
-    Menu(float width, float height);
-    void draw(sf::RenderWindow& window);
+    Menu(unsigned int width, unsigned int height);
+    void draw(sf::RenderWindow& window) const override;
     bool isStartClicked(const sf::Vector2f& mousePos) const;
     void update(const sf::Vector2f& mousePos);
     bool isFullscreenClicked(const sf::Vector2f& mousePos) const;
-    bool fullscreenToggleRequested = false;
+    bool isFullscreenToggleRequested() const;
+    void resetFullscreenToggleRequest();
+    int getSelectedPlayerCount() const;
+    void setFullscreenToggleRequested(bool value); 
+
+    void handleFullscreenToggle(sf::RenderWindow& window, unsigned int& currentStyle);
+    void setPlayerNicknames(const std::vector<std::string>& nicks);
+    const std::vector<std::string>& getPlayerNicknames() const;
+    void handleTextEntered(sf::Uint32 unicode);
 
 private:
-
     sf::Sprite background;
     sf::Texture bgTexture;
     sf::Font font;
@@ -23,7 +37,20 @@ private:
     sf::Sprite fullscreenButtonSprite;
     bool startButtonHovered = false;
     bool fullscreenButtonHovered = false;
-public:
-    bool isFullscreenToggleRequested() const;
-    void resetFullscreenToggleRequest();
+    bool fullscreenToggleRequested = false;
+    std::vector<sf::RectangleShape> playerCountButtons;
+    std::vector<sf::Text> playerCountTexts;
+    int selectedPlayerCount = 2;
+    unsigned int width;
+    unsigned int height;
+    std::vector<std::string> playerNicknames;
+    sf::RectangleShape nicknameButton;
+    sf::Text nicknameButtonText;
+    sf::Texture nicknameButtonTexture;
+    sf::Texture nicknameButtonHoverTexture;
+    sf::Sprite nicknameButtonSprite;
+    bool nicknameButtonHovered = false;
+    bool nicknameEditMode;
+    int nicknameEditPlayer;
+    std::string nicknameInput;
 };

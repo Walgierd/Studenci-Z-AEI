@@ -1,8 +1,27 @@
-#include "Board.h"
+﻿#include "Board.h"
 #include <algorithm>
 #include <cmath>
+#include <vector>
+#include <SFML/Graphics.hpp>
+#include <ranges>
+#include <filesystem> // dodane
+
+static sf::Texture backgroundTexture;
+static sf::Sprite backgroundSprite;
+
+std::vector<sf::Vector2f> g_hexCenters;
 
 Board::Board(float hexSize, sf::Vector2f center) {
+
+    static bool loaded = false;
+    if (!loaded) {
+        if (std::filesystem::exists("Assets/Background.png")) { // sprawdzenie czy plik istnieje
+            if (backgroundTexture.loadFromFile("Assets/Background.png")) {
+                backgroundSprite.setTexture(backgroundTexture);
+            }
+        }
+        loaded = true;
+    }
     generateTiles(hexSize, center);
 }
 
@@ -38,27 +57,25 @@ void Board::generateTiles(float hexSize, sf::Vector2f center) {
 
 std::vector<ResourceType> Board::shuffledResources() {
     std::vector<ResourceType> resources = {
-        ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
-        ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
-        ResourceType::Energia, ResourceType::Energia, ResourceType::Energia,
-        ResourceType::Energia, ResourceType::Energia, ResourceType::Energia,
-        ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki,
-        ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki
+        ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa, ResourceType::Kawa,
+        ResourceType::Piwo, ResourceType::Piwo, ResourceType::Piwo, ResourceType::Piwo,
+        ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki, ResourceType::Notatki,
+        ResourceType::Pizza, ResourceType::Pizza, ResourceType::Pizza, ResourceType::Kabel,
+        ResourceType::Kabel, ResourceType::Kabel
     };
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(resources.begin(), resources.end(), g);
     return resources;
 }
-
 std::vector<int> Board::shuffledNumbers() {
+    auto base = std::views::iota(2, 12);//ranges
     std::vector<int> numbers;
-    for (int i = 2; i <= 12; ++i) {
-        numbers.push_back(i);
-        numbers.push_back(i);
+    for (int n : base) {
+        numbers.push_back(n);
+        numbers.push_back(n);
     }
 
-    numbers.pop_back();
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(numbers.begin(), numbers.end(), g);
@@ -66,6 +83,9 @@ std::vector<int> Board::shuffledNumbers() {
 }
 
 void Board::draw(sf::RenderWindow& window) const {
+
+    window.draw(backgroundSprite);
+ 
     for (const auto& tile : tiles)
         tile.draw(window);
 }
